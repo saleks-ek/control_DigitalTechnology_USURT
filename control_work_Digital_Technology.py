@@ -53,6 +53,8 @@ for nameFileTXT in fileList:
     fileTXTResult = open(nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w')
     for i in fileTXT:
         lineTXT = i.strip()
+        if lineTXT == '':
+            continue
         # pass
         if lineTXT == '#':
             break
@@ -62,6 +64,8 @@ for nameFileTXT in fileList:
     fileTXTResult.write('#\n')
     for i in fileTXT:
         lineTXT = i.strip()
+        if lineTXT == '':
+            continue
         if lineTXT == '#':
             break
         else:
