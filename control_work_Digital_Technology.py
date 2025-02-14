@@ -1,6 +1,8 @@
 """
 Проверка контрольной работы по дисциплине "Цифровые технологии в профессональной деятельности"
 """
+import os
+
 #car = '50701077'
 def checkNumber(car):
     """
@@ -41,27 +43,30 @@ def checkStation(station):
     else: 
         return '-'
 
-# checkStation(station)
+# os.chdir('Для проверки//')
+pathForCheck = 'Для проверки//' # папка хранения проверяемых файлов
+pathPastCheck = 'После проверки//' # папка хранения результатов проверки
+dictStation = {}
+stations = []
+messageSPhrase = []
+messageIPhrase = []
 
-
-import os
-
-os.chdir('Для проверки//')
-fileList = os.listdir() 
+fileList = os.listdir(pathForCheck) 
 for nameFileTXT in fileList:
-    fileTXT = open(nameFileTXT, 'r')
-    fileTXTResult = open(nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w')
+    fileTXT = open(pathForCheck+nameFileTXT, 'r', encoding='UTF-8') # открытие проверяемого файла 
+    fileTXTResult = open(pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w', encoding='cp1251') # результат проверки
+    # обработка номеров вагонов
     for i in fileTXT:
         lineTXT = i.strip()
         if lineTXT == '':
             continue
-        # pass
         if lineTXT == '#':
             break
         else:
              res = checkNumber(lineTXT)
              fileTXTResult.write(lineTXT + ' '+ res+'\n')
     fileTXTResult.write('#\n')
+    # обработка списка кодов станций
     for i in fileTXT:
         lineTXT = i.strip()
         if lineTXT == '':
@@ -69,10 +74,41 @@ for nameFileTXT in fileList:
         if lineTXT == '#':
             break
         else:
-            res = checkStation(lineTXT)
-            fileTXTResult.write(lineTXT + ' '+ res+'\n')
+            dictStation[lineTXT[:2]] = lineTXT[3:]
+            if len(dictStation) == 1:
+                setStation = {lineTXT[3:7]}
+            else:
+                setStation.add(lineTXT[3:7])
+            if len(dictStation) != len(setStation):
+                fileTXTResult.write(lineTXT + ' код станции ' + lineTXT[3:7] +' повторяется\n')
+                del dictStation[lineTXT[:2]]
+                continue
+            res = checkStation(lineTXT[3:])
+            fileTXTResult.write(lineTXT + ' ' + res + '\n')
     fileTXTResult.write('#\n')
+    # обработка описания движения поездов
+    for i in fileTXT:
+        lineTXT = i.strip()
+        if lineTXT[0] == '!':
+            stations.clear()
+            stations = lineTXT[1:].split()
+            continue
+        elif lineTXT[:2] == '(:'and lineTXT[-2:] != ':)':
+            messageSPhrase.clear()
+            messageSPhrase = lineTXT[2:-1].split()
+            continue
+        elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)':
+            messageIPhrase.clear()
+            messageIPhrase = lineTXT[:-1].split()
+            continue
+        elif lineTXT[:2] == '(:'and lineTXT[-2:] == ':)':
+            messageSPhrase.clear()
+            messageSPhrase = lineTXT[:-1].split()
+            continue
+            pass
+
+
 fileTXT.close()
 fileTXTResult.close()
-print('Обоработка завершена')
+print('\nОбработка завершена')
 pass
