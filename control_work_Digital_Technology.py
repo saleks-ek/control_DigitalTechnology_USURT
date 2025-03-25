@@ -19,9 +19,9 @@ def checkNumber(car):
             resultCar = resultCar + int(car[pos])
     #print(resultCar)
     if resultCar % 10 == 0:
-        return '+'
+        return 'Номер вагона верен'
     else: 
-        return '-'
+        return 'Номер вагона не верен'
 
 #station = '781316'
 def checkStation(station):
@@ -39,13 +39,13 @@ def checkStation(station):
             resultStation = 11
     #print(resultStation % 11, station[5])
     if (resultStation % 11) == int(station[5]):
-        return '+'
+        return 'Код ЕСР станции верен'
     else: 
-        return '-'
+        return 'Код ЕСР станции не верен'
 
 def checkFormatMessageSPhrase(messagePhrase):
     """
-    Форматный контроль информационной фразы сообщений
+    Форматный контроль служебной фразы сообщений
     """
     numberCharactersField1 = 1
     numberCharactersField2 = 2
@@ -56,7 +56,7 @@ def checkFormatMessageSPhrase(messagePhrase):
     numberCharactersField9 = 9
     fieldTrue = 0
     numberField = 0
-    fieldMax = {'200':12, '201':13, '202':11, '203':12,'205':12 }
+    fieldMax = {'200':12, '201':13, '202':11, '203':12,'205':11 }
     if fieldMax.get(messageSPhrase[0]) == len(messageSPhrase):
         for numberField in range(0,fieldMax.get(messageSPhrase[0])):
             if numberField == 0 and len(messageSPhrase[numberField]) == numberCharactersField3:
@@ -107,6 +107,19 @@ def checkFormatMessageIPhrase(messageIhrase):
             resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'
     return resulFormat
 
+def creatingListMessages():
+    """Добавление недостающих элементов до полного набора полей общего формата сообщений
+    за полный набор полей общего формата сообщений принимаю набор полей сообщения 201
+    """
+    if messageSPhrase[0] == '200' or messageSPhrase[0] == '205':
+        messageSPhrase.append('0')
+    elif messageSPhrase[0] == '202':
+        messageSPhrase.append('00/00')
+        messageSPhrase.append('0')
+    elif messageSPhrase[0] == '203':
+        messageSPhrase.append('0')
+    pass
+            
 
 # os.chdir('Для проверки//')
 pathForCheck = 'Для проверки//' # папка хранения проверяемых файлов
@@ -115,6 +128,7 @@ dictStation = {}
 stations = []
 messageSPhrase = []
 messageIPhrase = []
+messageList = []
 messageList = []
 
 fileList = os.listdir(pathForCheck) 
@@ -159,7 +173,8 @@ for nameFileTXT in fileList:
         for i in fileTXT:
             lineTXT = i.strip()
             if lineTXT == '':
-                continue 
+                continue
+            
             elif lineTXT[0] == '!':
                 stations.clear()
                 stations = lineTXT[1:].split()
@@ -170,18 +185,23 @@ for nameFileTXT in fileList:
                 messageSPhrase = lineTXT[2:].split()
                 resultCheckFormat = checkFormatMessageSPhrase(messageSPhrase)    
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+            
             elif lineTXT[:2] == '(:'and lineTXT[-2:] == ':)':
                 messageSPhrase.clear()
                 messageSPhrase = lineTXT[2:-2].split()
                 resultCheckFormat = checkFormatMessageSPhrase(messageSPhrase)    
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+            
             elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)':
                 messageIPhrase.clear()
                 messageIPhrase = lineTXT[:-2].split()
                 resultCheckFormat = checkFormatMessageIPhrase(messageIPhrase)    
-                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
             
                 pass
+            
+                
+            
             # добавление недостающих элементов до полного набора полей общего формата сообщений
             # за полный набор полей общего формата сообщений принимаю набор полей сообщения 201
                 '''

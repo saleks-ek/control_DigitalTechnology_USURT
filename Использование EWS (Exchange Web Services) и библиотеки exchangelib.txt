@@ -1,0 +1,47 @@
+Метод 1: Использование EWS (Exchange Web Services) и библиотеки exchangelib
+Библиотека exchangelib предоставляет удобный интерфейс для работы с Exchange Server.
+
+1. Установите библиотеку:
+bash
+Copy
+pip install exchangelib
+2. Пример кода для получения писем:
+python
+Copy
+from exchangelib import Credentials, Account, Configuration, Message, FileAttachment
+
+# Настройки подключения
+email = "your.email@example.com"
+password = "your_password"
+server = "outlook.office365.com"  # Для Office 365. Или адрес вашего Exchange-сервера.
+
+# Авторизация
+credentials = Credentials(email, password)
+config = Configuration(server=server, credentials=credentials)
+account = Account(
+    primary_smtp_address=email,
+    config=config,
+    autodiscover=False,  # Отключить автообнаружение, если сервер задан вручную
+    access_type="delegate"  # Или "impersonation"
+)
+
+# Получить папку "Входящие"
+inbox = account.inbox
+
+# Получить последние 10 писем
+for item in inbox.all().order_by('-datetime_received')[:10]:
+    print(f"Тема: {item.subject}")
+    print(f"Отправитель: {item.sender.email_address}")
+    print(f"Дата: {item.datetime_received}")
+    print(f"Тело письма: {item.text_body}")
+
+    # Скачать вложения
+    for attachment in item.attachments:
+        if isinstance(attachment, FileAttachment):
+            with open(attachment.name, "wb") as f:
+                f.write(attachment.content)
+            print(f"Скачан вложение: {attachment.name}")
+Примечания:
+Если включена двухфакторная аутентификация, используйте OAuth2.
+
+Для корпоративных серверов может потребоваться указать service_endpoint в Configuration.
