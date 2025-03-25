@@ -43,7 +43,7 @@ def checkStation(station):
     else: 
         return 'Код ЕСР станции не верен'
 
-def checkFormatMessageSPhrase(messagePhrase):
+def checkFormatMessageSPhrase(messagePhraseCheck):
     """
     Форматный контроль служебной фразы сообщений
     """
@@ -57,26 +57,26 @@ def checkFormatMessageSPhrase(messagePhrase):
     fieldTrue = 0
     numberField = 0
     fieldMax = {'200':12, '201':13, '202':11, '203':12,'205':11 }
-    if fieldMax.get(messageSPhrase[0]) == len(messageSPhrase):
-        for numberField in range(0,fieldMax.get(messageSPhrase[0])):
-            if numberField == 0 and len(messageSPhrase[numberField]) == numberCharactersField3:
+    if fieldMax.get(messagePhraseCheck[0]) == len(messagePhraseCheck):
+        for numberField in range(0,fieldMax.get(messagePhraseCheck[0])):
+            if numberField == 0 and len(messagePhraseCheck[numberField]) == numberCharactersField3:
                 fieldTrue +=1
-            elif numberField == 1 and (len(messageSPhrase[numberField]) == numberCharactersField4 or len(messageSPhrase[numberField]) == numberCharactersField9):
+            elif numberField == 1 and (len(messagePhraseCheck[numberField]) == numberCharactersField4 or len(messagePhraseCheck[numberField]) == numberCharactersField9):
                 fieldTrue +=1
-            elif ((numberField > 1 and numberField < 4) or numberField == numberCharactersField5) and len(messageSPhrase[numberField]) == numberCharactersField4:
+            elif ((numberField > 1 and numberField < 4) or numberField == numberCharactersField5) and len(messagePhraseCheck[numberField]) == numberCharactersField4:
                 fieldTrue +=1
-            elif numberField == 4 and (len(messageSPhrase[numberField]) == numberCharactersField2 or len(messageSPhrase[numberField]) == numberCharactersField3):
+            elif numberField == 4 and (len(messagePhraseCheck[numberField]) == numberCharactersField2 or len(messagePhraseCheck[numberField]) == numberCharactersField3):
                 fieldTrue +=1
-            elif numberField == 6 and (len(messageSPhrase[numberField]) == numberCharactersField4 or len(messageSPhrase[numberField]) == numberCharactersField8 
-                                                                            or len(messageSPhrase[numberField]) == numberCharactersField9):
+            elif numberField == 6 and (len(messagePhraseCheck[numberField]) == numberCharactersField4 or len(messagePhraseCheck[numberField]) == numberCharactersField8 
+                                                                            or len(messagePhraseCheck[numberField]) == numberCharactersField9):
                 fieldTrue +=1
-            elif numberField > 6 and numberField < 11 and len(messageSPhrase[numberField]) == numberCharactersField2:
+            elif numberField > 6 and numberField < 11 and len(messagePhraseCheck[numberField]) == numberCharactersField2:
                 fieldTrue +=1
-            elif numberField == 11 and len(messageSPhrase[numberField]) == numberCharactersField5:
+            elif numberField == 11 and len(messagePhraseCheck[numberField]) == numberCharactersField5:
                 fieldTrue +=1
-            elif numberField == 12 and len(messageSPhrase[numberField]) == numberCharactersField1:
+            elif numberField == 12 and len(messagePhraseCheck[numberField]) == numberCharactersField1:
                 fieldTrue +=1
-        if fieldTrue == fieldMax.get(messageSPhrase[0]):
+        if fieldTrue == fieldMax.get(messagePhraseCheck[0]):
             resulFormat = 'МАКЕТ ВЕРЕН'
         else:
             resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'    
@@ -84,7 +84,7 @@ def checkFormatMessageSPhrase(messagePhrase):
             resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'
     return resulFormat
 
-def checkFormatMessageIPhrase(messageIhrase):
+def checkFormatMessageIPhrase(messageIPhraseCheck):
     """
     Форматный контроль информационной фразы сообщений
     """
@@ -92,11 +92,11 @@ def checkFormatMessageIPhrase(messageIhrase):
     IPhraseNumberField = 0
     IPhraseFieldMax = 8
     IPhraseColumnSet = {0:3, 1:5, 2:1, 3:2, 4:2, 5:4, 6:5, 7:2}
-    if IPhraseFieldMax == len(messageIPhrase):
+    if IPhraseFieldMax == len(messageIPhraseCheck):
         for IPhraseNumberField in range(0,IPhraseFieldMax):
-            if IPhraseNumberField < IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) == len(messageIPhrase[IPhraseNumberField]):
+            if IPhraseNumberField < IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) == len(messageIPhraseCheck[IPhraseNumberField]):
                IPhraseFieldTrue +=1
-            if IPhraseNumberField == IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) < len(messageIPhrase[IPhraseNumberField]):
+            if IPhraseNumberField == IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) < len(messageIPhraseCheck[IPhraseNumberField]):
                IPhraseFieldTrue +=1
 
         if IPhraseFieldTrue == IPhraseFieldMax:
@@ -107,19 +107,25 @@ def checkFormatMessageIPhrase(messageIhrase):
             resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'
     return resulFormat
 
-def creatingListMessages():
-    """Добавление недостающих элементов до полного набора полей общего формата сообщений
-    за полный набор полей общего формата сообщений принимаю набор полей сообщения 201
+def addingMessage(messageSPhraseAdd):
+    """Добавление недостающих элементов до полного набора полей общего формата сообщений.
+    За полный набор полей общего формата сообщений принимаю набор полей сообщения 201
     """
-    if messageSPhrase[0] == '200' or messageSPhrase[0] == '205':
-        messageSPhrase.append('0')
-    elif messageSPhrase[0] == '202':
-        messageSPhrase.append('00/00')
-        messageSPhrase.append('0')
-    elif messageSPhrase[0] == '203':
-        messageSPhrase.append('0')
+    if messageSPhraseAdd[0] == '200':
+        messageSPhraseAdd.append('0')
+    elif messageSPhraseAdd[0] == '202' or messageSPhraseAdd[0] == '205':
+        messageSPhraseAdd.append('00/00')
+        messageSPhraseAdd.append('0')
+    elif messageSPhraseAdd[0] == '203':
+        messageSPhraseAdd.append('0')
     pass
-            
+    return messageSPhraseAdd        
+
+def clearPartMessage(messageSPhrase, messageIPhrase, message):
+    messageSPhrase.clear()
+    messageIPhrase.clear()
+    message.clear()
+    return messageSPhrase, messageIPhrase, message
 
 # os.chdir('Для проверки//')
 pathForCheck = 'Для проверки//' # папка хранения проверяемых файлов
@@ -128,8 +134,11 @@ dictStation = {}
 stations = []
 messageSPhrase = []
 messageIPhrase = []
-messageList = []
-messageList = []
+messageSPhraseEmpty = ['000', '0000', '0000', '0000', '000', '0000', '0000', '00', '00', '00', '00', '00/00', '0']
+messageIPhraseEmpty = ['000','00000','0','00','00','0000','00000','00']
+message = []
+messageTemp = []
+listMessage = []
 
 fileList = os.listdir(pathForCheck) 
 for nameFileTXT in fileList:
@@ -182,22 +191,42 @@ for nameFileTXT in fileList:
 
             elif (lineTXT[:2] == '(:'and lineTXT[-2:] != ':)'):
                 messageSPhrase.clear()
-                messageSPhrase = lineTXT[2:].split()
-                resultCheckFormat = checkFormatMessageSPhrase(messageSPhrase)    
+                messageIPhrase.clear()
+                message.clear() 
+                messageTemp = lineTXT[2:].split()
+                resultCheckFormat = checkFormatMessageSPhrase(messageTemp)
+                if resultCheckFormat == 'МАКЕТ ВЕРЕН':
+                    messageSPhrase = messageTemp
+                else:
+                    messageSPhrase = messageSPhraseEmpty
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+                message = addingMessage(messageSPhrase)
+
+                # listMessage = creatingListMessages(listMessage, messageSPhrase)
             
             elif lineTXT[:2] == '(:'and lineTXT[-2:] == ':)':
-                messageSPhrase.clear()
-                messageSPhrase = lineTXT[2:-2].split()
-                resultCheckFormat = checkFormatMessageSPhrase(messageSPhrase)    
+                messageTemp = lineTXT[2:-2].split()
+                resultCheckFormat = checkFormatMessageSPhrase(messageTemp)    
+                if resultCheckFormat == 'МАКЕТ ВЕРЕН':
+                    messageSPhrase = messageTemp 
+                else:
+                    messageSPhrase = messageSPhraseEmpty.copy()
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+                message = addingMessage(messageSPhrase) + messageIPhraseEmpty.copy()
+                listMessage.append(message)
+                # listMessage = creatingListMessages(listMessage, messageSPhrase)
             
             elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)':
-                messageIPhrase.clear()
-                messageIPhrase = lineTXT[:-2].split()
-                resultCheckFormat = checkFormatMessageIPhrase(messageIPhrase)    
+                messageTemp = lineTXT[:-2].split()
+                resultCheckFormat = checkFormatMessageIPhrase(messageTemp)    
+                if resultCheckFormat == 'МАКЕТ ВЕРЕН':
+                    messageIPhrase = messageTemp
+                else:
+                    messageIPhrase = messageIPhraseEmpty.copy()
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
-            
+                message = message + messageIPhrase
+                listMessage.append(message.copy())
+
                 pass
             
                 
@@ -205,21 +234,16 @@ for nameFileTXT in fileList:
             # добавление недостающих элементов до полного набора полей общего формата сообщений
             # за полный набор полей общего формата сообщений принимаю набор полей сообщения 201
                 '''
-                if messageSPhrase[0] == '200' or messageSPhrase[0] == '205':
+                if messageSPhrase[0] == '200':
                     messageSPhrase.append('0')
-                elif messageSPhrase[0] == '202':
+                elif messageSPhrase[0] == '202' or messageSPhrase[0] == '205':
                     messageSPhrase.append('00/00')
                     messageSPhrase.append('0')
                 elif messageSPhrase[0] == '203':
                     messageSPhrase.append('0')
                     pass
                 '''
-                '''
-                elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)':
-                    messageIPhrase.clear()
-                    messageIPhrase = lineTXT[:-2].split()
-                    fileTXTResult.write(lineTXT + '\t\t\t\t\tстрока не обработана\n\n') '
-                '''
+                
             else:
                 fileTXTResult.write(lineTXT + '\t\t\tстрока не является частью сообщения\n\n')
 
