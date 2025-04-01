@@ -121,11 +121,24 @@ def addingMessage(messageSPhraseAdd):
     pass
     return messageSPhraseAdd        
 
-def clearPartMessage(messageSPhrase, messageIPhrase, message):
+def checkQuantityRoleStation(checkRoleStation: list, role: str):
+    """
+    Считет кол-во станций с заданой ролью
+    """
+    quantity = 0
+    for i in checkRoleStation:
+        if i[:1] == role:
+            quantity += 1
+    return quantity
+
+
+
+
+""" def clearPartMessage(messageSPhrase, messageIPhrase, message):
     messageSPhrase.clear()
     messageIPhrase.clear()
     message.clear()
-    return messageSPhrase, messageIPhrase, message
+    return messageSPhrase, messageIPhrase, message """
 
 # os.chdir('Для проверки//')
 pathForCheck = 'Для проверки//' # папка хранения проверяемых файлов
@@ -138,8 +151,11 @@ messageSPhraseEmpty = ['000', '0000', '0000', '0000', '000', '0000', '0000', '00
 messageIPhraseEmpty = ['000','00000','0','00','00','0000','00000','00']
 message = []
 messageTemp = []
-listMessage = []
+listMessages = []
+roleStations = []
 
+# dictTest = {22000:[23000], 230000:[22000,24000]}
+pass
 fileList = os.listdir(pathForCheck) 
 for nameFileTXT in fileList:
     if nameFileTXT[-3:] != 'txt': # открываем файлы только с расширением TXT
@@ -166,7 +182,7 @@ for nameFileTXT in fileList:
             if lineTXT == '#':
                 break
             else:
-                dictStation[lineTXT[:2]] = lineTXT[3:]
+                dictStation[lineTXT[3:7]] = lineTXT[:2]
                 if len(dictStation) == 1:
                     setStation = {lineTXT[3:7]}
                 else:
@@ -175,10 +191,11 @@ for nameFileTXT in fileList:
                     fileTXTResult.write(lineTXT + '\t\t\tкод станции ' + lineTXT[3:7] +' повторяется\n')
                     del dictStation[lineTXT[:2]]
                 
-                res = checkStation(lineTXT[3:])
-                fileTXTResult.write(lineTXT + ' ' + res + '\n')
+                resStation = checkStation(lineTXT[3:])
+                fileTXTResult.write(lineTXT + ' ' + resStation + '\n')
         fileTXTResult.write('#\n')
         # обработка описания движения поездов
+        pass
         for i in fileTXT:
             lineTXT = i.strip()
             if lineTXT == '':
@@ -186,8 +203,16 @@ for nameFileTXT in fileList:
             
             elif lineTXT[0] == '!':
                 stations.clear()
-                stations = lineTXT[1:].split()
-                fileTXTResult.write(lineTXT + '\t\t\tСПИСОК СТАНЦИЙ СФОРМИРОВАН\n\n')
+                roleStations.clear()
+                stations = [lineTXT[1:].split()]
+                numberStation = 0
+                for station in stations[0]:
+                    roleStations.append(dictStation.get(station))
+                stations.append(roleStations)
+                fileTXTResult.write('\n'+lineTXT + '\t\t\tСПИСОК СТАНЦИЙ СФОРМИРОВАН\n\n')
+                listMessages.clear()
+                quantityTechnStation = checkQuantityRoleStation(roleStations, '1') + checkQuantityRoleStation(roleStations, '2')
+                quantityBoardStation = checkQuantityRoleStation(roleStations, '5')
 
             elif (lineTXT[:2] == '(:'and lineTXT[-2:] != ':)'):
                 messageSPhrase.clear()
@@ -198,11 +223,9 @@ for nameFileTXT in fileList:
                 if resultCheckFormat == 'МАКЕТ ВЕРЕН':
                     messageSPhrase = messageTemp
                 else:
-                    messageSPhrase = messageSPhraseEmpty
+                    messageSPhrase = messageSPhraseEmpty.copy()
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
                 message = addingMessage(messageSPhrase)
-
-                # listMessage = creatingListMessages(listMessage, messageSPhrase)
             
             elif lineTXT[:2] == '(:'and lineTXT[-2:] == ':)':
                 messageTemp = lineTXT[2:-2].split()
@@ -211,10 +234,10 @@ for nameFileTXT in fileList:
                     messageSPhrase = messageTemp 
                 else:
                     messageSPhrase = messageSPhraseEmpty.copy()
-                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
                 message = addingMessage(messageSPhrase) + messageIPhraseEmpty.copy()
-                listMessage.append(message)
-                # listMessage = creatingListMessages(listMessage, messageSPhrase)
+                listMessages.append(message.copy())
+                # listMessages = creatingListMessages(listMessages, messageSPhrase)
             
             elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)':
                 messageTemp = lineTXT[:-2].split()
@@ -225,28 +248,48 @@ for nameFileTXT in fileList:
                     messageIPhrase = messageIPhraseEmpty.copy()
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
                 message = message + messageIPhrase
-                listMessage.append(message.copy())
+                listMessages.append(message.copy())
 
                 pass
-            
+                # Логический контроль сообщения
+                pass
+                if (listMessages[-1][0] == '202' or (listMessages[-1][0] == '205' and numberStation == 0)  
+                                                or (listMessages[-1][0] == '201' and numberStation != 0)): 
+                    numberStation += 1
                 
-            
-            # добавление недостающих элементов до полного набора полей общего формата сообщений
-            # за полный набор полей общего формата сообщений принимаю набор полей сообщения 201
-                '''
-                if messageSPhrase[0] == '200':
-                    messageSPhrase.append('0')
-                elif messageSPhrase[0] == '202' or messageSPhrase[0] == '205':
-                    messageSPhrase.append('00/00')
-                    messageSPhrase.append('0')
-                elif messageSPhrase[0] == '203':
-                    messageSPhrase.append('0')
-                    pass
-                '''
+                if listMessages[-1][1] !=  stations[0][numberStation-1]: # проверка станции передачи сообщения
+                    fileTXTResult.write(stations[0][numberStation-1] + ' -----Станция передачи сообщение НЕ СООТВЕТСТВУЕТ маршруту следования\n')
+                else: 
+                    fileTXTResult.write(stations[0][numberStation-1] + ' Станция передачи сообщение соответствует маршруту следования\n')
+                
+                # проверка номера поезда через кол-во технических станций и междор стыков в маршруте
+                if numberStation == 1:
+                    if (listMessages[-1][1][:1] == '2' and quantityTechnStation >= 3  # кол-во сорт и участ ст-ий >= 3
+                                                    and quantityBoardStation == 0  # кол-во междор стыков нет
+                                                or (quantityTechnStation >= 3 >=2 # кол-во сорт и участ ст-ий >= 2
+                                                    and quantityBoardStation > 0)): # кол-во междор стыков > 0
+                        fileTXTResult.write('\t\t\t Кол- во техн станций на маршруте движения ' + str(quantityTechnStation) +
+                                            ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд сквозной \n')
+                    else:
+                        fileTXTResult.write('\t\t\t Кол- во техн станций на маршруте движения ' + str(quantityTechnStation) +
+                                            ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд не сквозной \n')
+                else: 
+                    if (listMessages[-2][2] == listMessages[-1][2]
+                        or int(listMessages[-2][2]) == int(listMessages[-1][2])+1
+                        or int(listMessages[-2][2]) == int(listMessages[-1][2])-1):
+                        fileTXTResult.write('\t Номер поезда соответствует предыдущему сообщению\n\n')
+                    else:
+                        fileTXTResult.write('\t -----Номер поезда НЕ СООТВЕТСТВУЕТ предыдущему сообщению\n\n')
+                pass
+                    
                 
             else:
                 fileTXTResult.write(lineTXT + '\t\t\tстрока не является частью сообщения\n\n')
-
+            pass
+            
+        
+        
+        
         pass
         fileTXT.close()
         fileTXTResult.close()
