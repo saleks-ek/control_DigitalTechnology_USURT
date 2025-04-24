@@ -65,7 +65,7 @@ def checkFormatMessageSPhrase(messagePhraseCheck):
         messagePhraseCheck[0] = '000'
     
 
-    if (len(messagePhraseCheck[1]) == numberCharactersField4 or len(messagePhraseCheck[numberField]) == numberCharactersField9):
+    if (len(messagePhraseCheck[1]) == numberCharactersField4 or len(messagePhraseCheck[1]) == numberCharactersField9):
         fieldTrue +=1
     else:
         messagePhraseCheck[1] = '0000'
@@ -138,20 +138,23 @@ def checkFormatMessageIPhrase(messageIPhraseCheck):
     IPhraseNumberField = 0
     IPhraseFieldMax = 8
     IPhraseColumnSet = {0:3, 1:5, 2:1, 3:2, 4:2, 5:4, 6:5, 7:2}
-    if IPhraseFieldMax == len(messageIPhraseCheck):
-        for IPhraseNumberField in range(0,IPhraseFieldMax):
-            if IPhraseNumberField < IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) == len(messageIPhraseCheck[IPhraseNumberField]):
-               IPhraseFieldTrue +=1
-            if IPhraseNumberField == IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) < len(messageIPhraseCheck[IPhraseNumberField]):
-               IPhraseFieldTrue +=1
+    
+    for IPhraseNumberField in range(0,IPhraseFieldMax):
+        if IPhraseNumberField < IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) == len(messageIPhraseCheck[IPhraseNumberField]):
+            IPhraseFieldTrue +=1
+        elif IPhraseNumberField < IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) != len(messageIPhraseCheck[IPhraseNumberField]):
+            messageIPhraseCheck[IPhraseNumberField] = '0' * IPhraseColumnSet.get(IPhraseNumberField)
+        if IPhraseNumberField == IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) < len(messageIPhraseCheck[IPhraseNumberField]):
+            IPhraseFieldTrue +=1
+        elif IPhraseNumberField == IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) > len(messageIPhraseCheck[IPhraseNumberField]):
+            messageIPhraseCheck[IPhraseNumberField] = '0' * IPhraseColumnSet.get(IPhraseNumberField)
 
-        if IPhraseFieldTrue == IPhraseFieldMax:
-            resulFormat = 'МАКЕТ ВЕРЕН'
-        else:
-            resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'    
+    if IPhraseFieldTrue == IPhraseFieldMax:
+        resulFormat = 'МАКЕТ ВЕРЕН'
     else:
-            resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'
-    return resulFormat
+        resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'    
+    
+    return resulFormat, messageIPhraseCheck
 
 def addingMessage(messageSPhraseAdd):
     """Добавление недостающих элементов до полного набора полей общего формата сообщений.
@@ -160,8 +163,12 @@ def addingMessage(messageSPhraseAdd):
     if messageSPhraseAdd[0] == '200':
         messageSPhraseAdd.append('0')
     elif messageSPhraseAdd[0] == '202' or messageSPhraseAdd[0] == '205':
-        messageSPhraseAdd.append('00/00')
-        messageSPhraseAdd.append('0')
+        if len(messageSPhraseAdd) == 11:
+            messageSPhraseAdd.append('00/00')
+            messageSPhraseAdd.append('0')
+        else:
+             messageSPhraseAdd[11] = '00/00'
+             messageSPhraseAdd[12] = '0' 
     elif messageSPhraseAdd[0] == '203':
         messageSPhraseAdd.append('0')
     pass
@@ -178,68 +185,303 @@ def checkQuantityRoleStation(checkRoleStation: list, role: str):
     return quantity
 
 def checkLogicalMessage(numberStation):
+    """
+    Логический контроль сообщения
+    """
     # Логический контроль сообщения
-                # if listMessages[-1][0] == '000':
-                #     fileTXTResult.write('Сообщение не проверется, ОШИБКА МАКЕТА\n')
-                #     return numberStation
-                pass
-                if (listMessages[-1][0] == '202' or (listMessages[-1][0] == '205' and numberStation == 0)  
-                                                or (listMessages[-1][0] == '201' and numberStation != 0)): 
-                    numberStation += 1
-                
-                if listMessages[-1][1] != '000':
-                    if listMessages[-1][1] !=  stations[0][numberStation-1]: # проверка станции передачи сообщения
-                        fileTXTResult.write(stations[0][numberStation-1] + ' -----Станция передачи сообщение НЕ СООТВЕТСТВУЕТ маршруту следования\n')
-                    else: 
-                        fileTXTResult.write(stations[0][numberStation-1] + ' Станция передачи сообщение соответствует маршруту следования\n')
+    # if listMessages[-1][0] == '000':
+    #     fileTXTResult.write('Сообщение не проверется, ОШИБКА МАКЕТА\n')
+    #     return numberStation
+    def differenceTime(hoursStart, hoursStop,minutesStart, minutesStop):
+        """
+        Расчет разницы в часах и минутах
+        """
+        if minutesStart <= minutesStop:
+            differenceMinutes = minutesStop - minutesStart
+        else:
+            hoursStop = hoursStop - 1
+            differenceMinutes = 60 + minutesStop - minutesStart
+        if hoursStart <= hoursStop:
+            differenceHours = hoursStop - hoursStart
+        else:
+            differenceHours = 24 + hoursStop - hoursStart
+        return differenceHours, differenceMinutes
+    
+    if (listMessages[-1][0] == '202' or (listMessages[-1][0] == '205' and numberStation == 0)  
+                                    or (listMessages[-1][0] == '201' and numberStation != 0)): 
+        numberStation += 1
+    
+    if listMessages[-1][1] != '0000':
+        if listMessages[-1][1] !=  stations[0][numberStation-1]: # проверка станции передачи сообщения
+            fileTXTResult.write(stations[0][numberStation-1] + ' Станция передачи сообщение НЕ СООТВЕТСТВУЕТ маршруту следования\n')
+        else: 
+            fileTXTResult.write(stations[0][numberStation-1] + ' Станция передачи сообщение соответствует маршруту следования\n')
+    else:
+        fileTXTResult.write('ОШИБКА МАКЕТА. Код ЕСР станции не проверяется')
+    
+    # проверка соответствия роли станции передаваемым сообщениям
+    if listMessages[-1][0] == '202' and stations[1][stations[0].index(listMessages[-1][1])][:1] not in listRole202:
+         fileTXTResult.write('\t Стания ' + listMessages[-1][1]+ ' не может передавать сообщение о проследовании\n')
+    elif (listMessages[-1][0] == '200' and listMessages[-1][0] == '201' and listMessages[-1][0] == '205' and listMessages[-1][0] == '203'
+          and stations[1][stations[0].index(listMessages[-1][1])][:1] not in listRole200):
+         fileTXTResult.write('\t Стания ' + listMessages[-1][1]+ ' не может передавать сообщение о работе с поездом на станции\n')
+        
+    # проверка номера поезда через кол-во технических станций и междор стыков в маршруте
+    if numberStation == 1: # Если станция первая в списке, проверяем соответствие номера сквозному
+        if (listMessages[-1][2][:1] == '2' and quantityTechnStation >= 3  # кол-во сорт и участ ст-ий >= 3
+                                        and quantityBoardStation == 0  # кол-во междор стыков нет
+                                    or (quantityTechnStation >=2 # кол-во сорт и участ ст-ий >= 2
+                                        and quantityBoardStation > 0)): # кол-во междор стыков > 0
+            fileTXTResult.write('\t Кол- во техн станций на маршруте движения ' + str(quantityTechnStation) +
+                                ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд сквозной ' + listMessages[-1][2] +'\n')
+        else:
+            fileTXTResult.write('\t Кол- во техн станций на маршруте движения ' + str(quantityTechnStation) +
+                                ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд не сквозной ' + listMessages[-1][2] + '\n')
+    else: 
+        if (listMessages[-2][2] == listMessages[-1][2]
+            or int(listMessages[-2][2]) == int(listMessages[-1][2])+1
+            or int(listMessages[-2][2]) == int(listMessages[-1][2])-1):
+            fileTXTResult.write('\t Номер поезда соответствует предыдущему сообщению\n')
+        else:
+            fileTXTResult.write('\t -----Номер поезда НЕ СООТВЕТСТВУЕТ предыдущему сообщению\n')
+
+    # проверка индекса поезда
+    if numberStation == 1:
+        if listMessages[-1][2][:1] == '2' and ((listMessages[-1][3][:2] not in setRegions and listMessages[-1][5][:2] not in setRegions)
+            or (listMessages[-1][3][:2] not in setRegions and listMessages[-1][5][:2] in setRegions) 
+            or (listMessages[-1][3][:2] in setRegions and listMessages[-1][5][:2] not in setRegions) 
+            or (listMessages[-1][3][:2] in setRegions and listMessages[-1][5][:2] in setRegions 
+                and listMessages[-1][3][:2] != listMessages[-1][5][:2])):
+            fileTXTResult.write('\t\t Индекс поезда соответствует номеру поезда\n')
+        elif listMessages[-1][2][:1] == '3' and (listMessages[-1][3][:2] in setRegions and listMessages[-1][3][:2] == listMessages[-1][5][:2]):
+            fileTXTResult.write('\t\t Индекс поезда соответствует номеру поезда\n')
+            pass
+        else:
+            fileTXTResult.write('\t\t Индекс поезда НЕ СООТВЕТСТВУЕТ номеру поезда\n')    
+            
+    if numberStation != 1:
+        if compareField(3)==1 and compareField(4)==1 and compareField(5)==1:
+            fileTXTResult.write('\t\t Индекс поезда соответствует индексу поезда в предыдущем сообщении\n')
+        else:
+            fileTXTResult.write('\t\t Индекс поезда НЕ СООТВЕТСТВУЕТ индексу поезда в предыдущем сообщении\n')
+    
+    # проверка направления движения
+    # соответствие длины поля направления в с.202 для узловых станций
+    if (listMessages[-1][0] == '202' and stations[1][stations[0].index(listMessages[-1][1])][:1] != '4'
+            and len(listMessages[-1][6]) != 4):
+        fileTXTResult.write('\t\t Станцция ' + listMessages[-1][1] + ' НЕ ЯВЛЯЕТСЯ ПРОМЕЖУТОЧНОЙ УЗЛОВОЙ. Указывается только направление ОТКУДА \n')
+    elif (listMessages[-1][0] == '202' and (stations[1][stations[0].index(listMessages[-1][1])][:1] == '4'
+                                          or stations[1][stations[0].index(listMessages[-1][1])] == '31')
+            and len(listMessages[-1][6]) != 4):
+        fileTXTResult.write('\t\t Станцция ' + listMessages[-1][1] + ' узловая \n')
+    
+    # с. 205 и 200
+    if listMessages[-1][0] == '205' or listMessages[-1][0] == '200':
+            codeStationWhere = findCodeStThroughRoleWhere(listMessages[-1][6])
+            if listMessages[-1][6] == codeStationWhere or listMessages[-1][6][:2] not in setRegions:
+                fileTXTResult.write('\t\t' + listMessages[-1][6] + ' Напр. следования поезда КУДА соответствует маршруту\n')
+            else:
+                fileTXTResult.write('\t\t' + listMessages[-1][6] + ' Напр. следования поезда КУДА НЕ СООТВЕТСТВУЕТ маршруту\n')
+    
+    # с. 201
+    elif listMessages[-1][0] == '201': 
+        codeStationWhereFrom = findCodeStThroughRoleWhereFrom(listMessages[-1][6]) 
+        if listMessages[-1][6] == codeStationWhereFrom or listMessages[-1][6][:2] not in setRegions:
+            fileTXTResult.write('\t\t' + listMessages[-1][6] + ' Напр. следования поезда ОТКУДА соответствует маршруту\n')
+        else:
+            fileTXTResult.write('\t\t' + listMessages[-1][6] + ' Напр. следования поезда ОТКУДА НЕ СООТВЕТСТВУЕТ маршруту\n')
+    
+    # с. 202
+    elif listMessages[-1][0] == '202': 
+        if numberStation == 1: # сообщение первое в описании движения поезда
+            if listMessages[-1][6][:2] not in setRegions:
+                fileTXTResult.write('\t\t' + listMessages[-1][6] + ' Напр. следования поезда ОТКУДА соответствует маршруту\n')
+            else:
+                fileTXTResult.write('\t\t' + listMessages[-1][6] + ' Напр. следования поезда ОТКУДА НЕ СООТВЕТСТВУЕТ маршруту\n')
+            
+        elif numberStation != 1:
+            # if (listMessages[-1][0] == '201'): # вынести 201 сообщение отдельно
+            codeStationWhereFrom = findCodeStThroughRoleWhereFrom(listMessages[-1][6][:4])
+            if listMessages[-1][6] == codeStationWhereFrom:
+                fileTXTResult.write('\t\t' + listMessages[-1][6][:4] + ' Напр. следования поезда ОТКУДА соответствует маршруту\n')
+            else:
+                fileTXTResult.write('\t\t' + listMessages[-1][6][:4] + ' Напр. следования поезда ОТКУДА НЕ СООТВЕТСТВУЕТ маршруту\n')
+            if stations[1][stations[0].index(listMessages[-1][1])][:1] == '4':
+                codeStationWhere = findCodeStThroughRoleWhere(listMessages[-1][6][5:])
+                if listMessages[-1][6] == findCodeStThroughRoleWhereFrom(listMessages[-1][6][5:]):
+                    fileTXTResult.write('\t\t' + listMessages[-1][6][5:] + ' Напр. следования поезда КУДА соответствует маршруту\n')
                 else:
-                    fileTXTResult.write('ОШИБКА МАКЕТА. Код сообщения не проверяется')
-                    
-                # проверка номера поезда через кол-во технических станций и междор стыков в маршруте
-                if numberStation == 1:
-                    if (listMessages[-1][1][:1] == '2' and quantityTechnStation >= 3  # кол-во сорт и участ ст-ий >= 3
-                                                    and quantityBoardStation == 0  # кол-во междор стыков нет
-                                                or (quantityTechnStation >=2 # кол-во сорт и участ ст-ий >= 2
-                                                    and quantityBoardStation > 0)): # кол-во междор стыков > 0
-                        fileTXTResult.write('\t\t\t Кол- во техн станций на маршруте движения ' + str(quantityTechnStation) +
-                                            ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд сквозной \n')
-                    else:
-                        fileTXTResult.write('\t\t\t Кол- во техн станций на маршруте движения ' + str(quantityTechnStation) +
-                                            ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд не сквозной \n')
-                else: 
-                    if (listMessages[-2][2] == listMessages[-1][2]
-                        or int(listMessages[-2][2]) == int(listMessages[-1][2])+1
-                        or int(listMessages[-2][2]) == int(listMessages[-1][2])-1):
-                        fileTXTResult.write('\t Номер поезда соответствует предыдущему сообщению\n\n')
-                    else:
-                        fileTXTResult.write('\t -----Номер поезда НЕ СООТВЕТСТВУЕТ предыдущему сообщению\n\n')
-                pass
-                return numberStation
+                    fileTXTResult.write('\t\t' + listMessages[-1][6][5:] + ' Напр. следования поезда КУДА НЕ СООТВЕТСТВУЕТ маршруту\n')
+            
+    elif listMessages[-1][0] == '203':
+        if len(listMessages[-1][6]) == 8:
+            pass
+        else:
+            fileTXTResult.write('\t\t № вагона должен быть из восьми цифр\n')
+            
+    else:
+        fileTXTResult.write('\t\t Напр. следования поезда не проверялось\n')
+
+    # проверка даты и времени
+    # daysOperation = int(listMessages[-1][7])
+    # monthsOperation = int(listMessages[-1][8])
+    hoursOperation = int(listMessages[-1][9])
+    minutesOperation = int(listMessages[-1][10])
+
+    pass
+
+    # проверка работы с локомотивом
+    pass
+    if listMessages[-1][0] != '203':
+        # проверка серии локомотива и номера лок-ва
+        if numberStation != 1 and listMessages[-1][0] == '205' and listMessages[-2][12] == '1' and compareField(13) == 0 and compareField(13) == 0:
+            fileTXTResult.write('\t Смена лок-ва выполнена\n')
+        elif numberStation != 1 and listMessages[-1][0] == '205' and listMessages[-2][12] == '1' and compareField(13) == 1 and compareField(13) == 1:
+            fileTXTResult.write('\t Смена лок-ва НЕ ВЫПОЛНЕНА\n')
+        elif numberStation != 1 and listMessages[-1][0] == '205' and listMessages[-2][12] == '0' and compareField(13) == 1 and compareField(13) == 1:
+            fileTXTResult.write('\t Смена лок-ва не нужна\n')    
+        pass
+        # проверка номера лок-ва
+        if numberStation == 1 and (listMessages[-1][0] == '202' or listMessages[-1][0] == '205'):
+            if listMessages[-1][14][-1:] == '0' or listMessages[-1][14][-1:] == '1' or listMessages[-1][14][-1:] == '2':
+                fileTXTResult.write('\t Номер лок-ва допустим\n')
+            else:
+                fileTXTResult.write('\t\t Последний символ № лок-ва НЕ ВЕРЕН\n')
+        elif (numberStation != 1 and (listMessages[-1][0] == '202' or listMessages[-1][0] == '200' 
+                                    or listMessages[-1][0] == '201' 
+                                    or (listMessages[-1][0] == '205' and listMessages[-2][11] == '0')) 
+                                and compareField(13) == 1 and compareField(12) == 1):
+            fileTXTResult.write('\t Серия и Номер лок-ва соответствует предыдущему сообщенияю\n')
+        elif (numberStation != 1 and listMessages[-1][0] == '205' and listMessages[-2][11] == '1'
+            and compareField(13) == 0 and (listMessages[-1][13][-1:] == '0' or listMessages[-1][13][-1:] == '1' 
+                                            or listMessages[-1][13][-1:] == '2')):
+            fileTXTResult.write('\t Смена лок-ва. Номер лок-ва допустим\n')
+        
+        # проверка вида слелования лок-ва
+        if listMessages[-1][15] == '1':
+            fileTXTResult.write('\t '+ listMessages[-1][15] + ' Вид следования лок-ва соответствует <<В ГОЛОВЕ>> \n')
+        else:
+            fileTXTResult.write('\t '+ listMessages[-1][15] + ' Вид следования лок-ва  НЕ СООТВЕТСТВУЕТ <<В ГОЛОВЕ>> \n')
+
+        # проверка времени работы лок-ой бригады
+        hoursBrigade = int(listMessages[-1][16])
+        minutesBrigade = int(listMessages[-1][17])
+        
+        hoursWork, minutesWork = differenceTime(hoursBrigade, hoursOperation, minutesBrigade, minutesOperation)
+
+        if hoursWork < 12:
+            fileTXTResult.write('\t ' + str(hoursWork)+ ' ' +str(minutesWork) + ' Время работы лок. бригады не превышает 12 часов \n')
+        else:
+            fileTXTResult.write('\t ' + str(hoursWork)+ ' ' +str(minutesWork) + ' Время работы лок. бригады ПРЕВЫШАЕТ 12 ЧАСОВ \n')
+
+        # проверка депо приписки
+        if numberStation == 1:
+            if listMessages[-1][0] == '202' and stations[1][stations[0].index(listMessages[-1][1])][:1] == '5':
+                if listMessages[-1][18][:2] == min(list(setRegions)):
+                    fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады нашего региона \n')
+                elif listMessages[-1][18][:2] not in setRegions:
+                    fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады не нашего региона \n')
+                else:
+                    fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады НЕ СООТВЕТСВУЕТ требованиям \n')
+            elif listMessages[-1][0] == '205':
+                if listMessages[-1][18][:2] == min(list(setRegions)):
+                    fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады нашего региона \n')
+                else:
+                    fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады НЕ СООТВЕТСВУЕТ требованиям \n')
+        else:
+            if (listMessages[-1][0] == '202' or listMessages[-1][0] == '201' or listMessages[-1][0] == '200') and compareField(18) == 1:
+                fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады СООТВЕТСВУЕТ предыдущему сообщению \n')
+            elif listMessages[-1][0] == '205' and listMessages[-2][0] == '201' and listMessages[-1][18][:2] == min(list(setRegions)):
+                fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады нашего региона \n')
+            elif listMessages[-1][0] == '205' and listMessages[-2][0] == '201' and listMessages[-1][18][:2] != min(list(setRegions)):
+                fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады НЕ СООТВЕТСТВЕТ нашему региону \n')
+            else:
+                fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады НЕ СООТВЕТСВУЕТ предыдущему сообщению \n\n')
+                           
+
+        # проверка табельного номера лок-ой бригады и фамилии машиниста
+        if (listMessages[-1][0] == '205' and numberStation != 1 and stations[1][stations[0].index(listMessages[-1][1])][:1] == '1'
+            and stations[1][stations[0].index(listMessages[-1][1])][:1] == '2' and compareField(19) == 0 and compareField(20) == 0):
+            fileTXTResult.write('\t ' + listMessages[-1][19] + listMessages[-1][20] + ' Смена лок. бригады выполнена \n')
+        elif ((listMessages[-1][0] != '205' or listMessages[-1][0] != '203' )and numberStation != 1 
+             and compareField(19) == 1 and compareField(20) == 1):
+            fileTXTResult.write('\t ' + listMessages[-1][19] + ' ' + listMessages[-1][20] + ' Лок. бригада соответствует предыдущему сообщению\n')
+        
+
+    return numberStation
 
 
+def findCodeStThroughRoleWhere(codeSt):
+    """
+    Поиск кода ЕСР станции направления движения "КУДА" 
+    """
+    if codeSt in stations[0]:
+        stationIndex = stations[0].index(codeSt) # определяю индекс станции в списке станций
+        for role in stations[1][stationIndex+1:]: # двигаюсь по списку ролей станций от позиции станции до конца списка
+            if role[:1] == '1' or role[:1] == '2': # нашли роль техн. станции
+                roleIndex = stations[1].index(role) # определяем индекс роли в списке
+                technStation = stations[0][roleIndex] # определяем код ЕСР станции по индексу роли в списке
+                break
+            elif role[:1] == '5': # 
+                technStation = '0000'
+                break
+            elif role[:1] == '3': # 
+                technStation = codeSt
+                break
+        technStation = codeSt
+    else:
+        technStation = '0000'
+        pass
+    return technStation
 
-""" def clearPartMessage(messageSPhrase, messageIPhrase, message):
-    messageSPhrase.clear()
-    messageIPhrase.clear()
-    message.clear()
-    return messageSPhrase, messageIPhrase, message """
-
+def findCodeStThroughRoleWhereFrom(codeSt):
+    """
+    Поиск кода ЕСР станции направления движения "ОТКУДА" 
+    """
+    if codeSt in stations[0]:
+        stationIndex = stations[0].index(codeSt)
+        for pozition in range(stationIndex-1, -1, -1): # двигаюсь по списку ролей станций от позиции станции до начала списка
+            if stations[1][pozition][:1] == '1' or stations[1][pozition][:1] == '2': # нашли роль техн. станции
+                roleIndex = stations[1].index(stations[1][pozition]) # определяем индекс роли в списке
+                technStation = stations[0][roleIndex] # определяем код ЕСР станции по индексу роли в списке
+                break
+            
+            """ elif stations[1][pozition][:1] == '5': # 
+                technStation = '0000'
+                break
+            elif stations[1][pozition][:1] == '3': # 
+                technStation = codeSt
+                break """
+        technStation = codeSt
+    else:
+        technStation = '0000'
+    return technStation
+ 
+def compareField(numberField:int):
+    """
+    Сравнение поля с номером numberField последней и предпоследней записей в списке сообщений
+    """
+    if listMessages[-2][numberField] != listMessages[-1][numberField]:
+        return 0
+    return 1
+    
 # os.chdir('Для проверки//')
 pathForCheck = 'Для проверки//' # папка хранения проверяемых файлов
 pathPastCheck = 'После проверки//' # папка хранения результатов проверки
 numberErrors = 0 
-dictStation = {}
-stations = []
-messageSPhrase = []
-messageIPhrase = []
-messageSPhraseEmpty = ['000', '0000', '0000', '0000', '000', '0000', '0000', '00', '00', '00', '00', '00/00', '0']
+dictStation = dict()
+stations = list()
+setRegions = set()
+messageSPhrase = list()
+messageIPhrase = list()
+# messageSPhraseEmpty = ['000', '0000', '0000', '0000', '000', '0000', '0000', '00', '00', '00', '00', '00/00', '0']
 messageIPhraseEmpty = ['000','00000','0','00','00','0000','00000','00']
-message = []
-messageTemp = []
-listMessages = []
-roleStations = []
-
-# dictTest = {22000:[23000], 230000:[22000,24000]}
+message = list()
+messageTemp = list()
+listMessages = list()
+roleStations = list()
+listRole202 = ['3', '4', '5', '6']
+listRole200 = ['3', '1', '2']
 pass
 fileList = os.listdir(pathForCheck) 
 for nameFileTXT in fileList:
@@ -274,8 +516,10 @@ for nameFileTXT in fileList:
                 dictStation[lineTXT[3:7]] = lineTXT[:2]
                 if len(dictStation) == 1:
                     setStation = {lineTXT[3:7]}
+                    setRegions =  {lineTXT[3:7][:2]}
                 else:
                     setStation.add(lineTXT[3:7])
+                    setRegions.add(lineTXT[3:7][:2])
                 if len(dictStation) != len(setStation):
                     numberErrors += 1
                     fileTXTResult.write(lineTXT + '\t\t\tкод станции ' + lineTXT[3:7] +' повторяется. Ошибка '
@@ -290,6 +534,8 @@ for nameFileTXT in fileList:
                 else:
                     fileTXTResult.write(lineTXT + ' ' + resStation + '\n')
         fileTXTResult.write('#\n')
+        # listRegions = list(setRegions)
+        
         # обработка описания движения поездов
         pass
         for i in fileTXT:
@@ -305,7 +551,7 @@ for nameFileTXT in fileList:
                 for station in stations[0]:
                     roleStations.append(dictStation.get(station))
                 stations.append(roleStations)
-                fileTXTResult.write('\n'+lineTXT + '\t\t\tСПИСОК СТАНЦИЙ СФОРМИРОВАН\n\n')
+                fileTXTResult.write('\n'+lineTXT + '\t\t\tСПИСОК СТАНЦИЙ СФОРМИРОВАН\n')
                 listMessages.clear()
                 quantityTechnStation = checkQuantityRoleStation(roleStations, '1') + checkQuantityRoleStation(roleStations, '2')
                 quantityBoardStation = checkQuantityRoleStation(roleStations, '5')
@@ -316,30 +562,27 @@ for nameFileTXT in fileList:
                 message.clear() 
                 messageTemp = lineTXT[2:].split()
                 resultCheckFormat, messageSPhrase = checkFormatMessageSPhrase(messageTemp)
-                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n')
-                message = addingMessage(messageSPhrase)
+                fileTXTResult.write('\n' + lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+                message = addingMessage(messageSPhrase.copy())
             
             elif lineTXT[:2] == '(:'and lineTXT[-2:] == ':)':
                 messageTemp = lineTXT[2:-2].split()
                 resultCheckFormat, messageSPhrase = checkFormatMessageSPhrase(messageTemp)    
                 
-                '''if resultCheckFormat == 'МАКЕТ ВЕРЕН':
-                    messageSPhrase = messageTemp 
-                else:
-                    messageSPhrase = messageSPhraseEmpty.copy()'''
+                
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
-                message = addingMessage(messageSPhrase) + messageIPhraseEmpty.copy()
+                message = addingMessage(messageSPhrase.copy()) + messageIPhraseEmpty.copy()
                 listMessages.append(message.copy())
                 
                 numberStation = checkLogicalMessage(numberStation)
             
             elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)':
                 messageTemp = lineTXT[:-2].split()
-                resultCheckFormat = checkFormatMessageIPhrase(messageTemp)    
+                resultCheckFormat, messageTemp = checkFormatMessageIPhrase(messageTemp)    
                 if resultCheckFormat == 'МАКЕТ ВЕРЕН':
-                    messageIPhrase = messageTemp
+                    messageIPhrase = messageTemp.copy()
                 else:
-                    messageIPhrase = messageIPhraseEmpty.copy()
+                    messageIPhrase = messageTemp.copy()
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
                 message = message + messageIPhrase
                 listMessages.append(message.copy())
@@ -349,7 +592,7 @@ for nameFileTXT in fileList:
                     
                 
             else:
-                fileTXTResult.write(lineTXT + '\t\t\tстрока не является частью сообщения\n\n')
+                fileTXTResult.write('\n' + lineTXT + '\t\t\tстрока не является частью сообщения\n')
             pass
             
         
