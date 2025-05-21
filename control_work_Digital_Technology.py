@@ -47,6 +47,8 @@ def checkFormatMessageSPhrase(messagePhraseCheck):
     """
     Форматный контроль служебной фразы сообщений
     """
+    global skipCheck
+
     numberCharactersField1 = 1
     numberCharactersField2 = 2
     numberCharactersField3 = 3
@@ -58,75 +60,80 @@ def checkFormatMessageSPhrase(messagePhraseCheck):
     numberField = 0
     fieldMax = {'200':12, '201':13, '202':11, '203':12,'205':11, '000':0}
         
-
-    if len(messagePhraseCheck[0]) == numberCharactersField3:
-        fieldTrue +=1
-    else:
-        messagePhraseCheck[0] = '000'
-    
-
-    if (len(messagePhraseCheck[1]) == numberCharactersField4 or len(messagePhraseCheck[1]) == numberCharactersField9):
-        fieldTrue +=1
-    else:
-        messagePhraseCheck[1] = '0000'
-
-    # if (numberField > 1 and numberField < 4) or numberField == 5:
-    if len(messagePhraseCheck[2]) == numberCharactersField4:
-        fieldTrue +=1
-    else:
-        messagePhraseCheck[2] = '0000'
-    
-    if len(messagePhraseCheck[3]) == numberCharactersField4:
-        fieldTrue +=1
-    else:
-        messagePhraseCheck[3] = '0000'
-
-    if (len(messagePhraseCheck[4]) == numberCharactersField2 or len(messagePhraseCheck[4]) == numberCharactersField3):
-        fieldTrue +=1
-    else:
-        messagePhraseCheck[4] = '00'
-    
-    if len(messagePhraseCheck[5]) == numberCharactersField4:
-        fieldTrue +=1
-    else:
-        messagePhraseCheck[5] = '0000'
-    
-    if (len(messagePhraseCheck[6]) == numberCharactersField4 or len(messagePhraseCheck[6]) == numberCharactersField8 
-                                                                    or len(messagePhraseCheck[6]) == numberCharactersField9):
-        fieldTrue +=1
-    else:
-        messagePhraseCheck[6] = '0000'
-
-    for numberField in range(7, 11):
-        if len(messagePhraseCheck[numberField]) == numberCharactersField2:
+    if len(messagePhraseCheck) != fieldMax.get(messagePhraseCheck[0]):
+        fieldTrue = 0
+    else:    
+        if len(messagePhraseCheck[0]) == numberCharactersField3:
             fieldTrue +=1
         else:
-            messagePhraseCheck[numberField] = '00'
+            pass # messagePhraseCheck[0] = '000'
+        
 
-    if fieldMax.get(messagePhraseCheck[0])-1 > 10:
-        if len(messagePhraseCheck) == fieldMax.get(messagePhraseCheck[0]):
-            if len(messagePhraseCheck[11]) == numberCharactersField5:
+        if (len(messagePhraseCheck[1]) == numberCharactersField4 or len(messagePhraseCheck[1]) == numberCharactersField9):
+            fieldTrue +=1
+        else:
+            pass # messagePhraseCheck[1] = '0000'
+
+        # if (numberField > 1 and numberField < 4) or numberField == 5:
+        if len(messagePhraseCheck[2]) == numberCharactersField4:
+            fieldTrue +=1
+        else:
+            pass # messagePhraseCheck[2] = '0000'
+        
+        if len(messagePhraseCheck[3]) == numberCharactersField4:
+            fieldTrue +=1
+        else:
+            pass # messagePhraseCheck[3] = '0000'
+
+        if (len(messagePhraseCheck[4]) == numberCharactersField2 or len(messagePhraseCheck[4]) == numberCharactersField3):
+            fieldTrue +=1
+        else:
+            pass # messagePhraseCheck[4] = '00'
+        
+        if len(messagePhraseCheck[5]) == numberCharactersField4:
+            fieldTrue +=1
+        else:
+            pass # messagePhraseCheck[5] = '0000'
+        
+        if (len(messagePhraseCheck[6]) == numberCharactersField4 or len(messagePhraseCheck[6]) == numberCharactersField8 
+                                                                        or len(messagePhraseCheck[6]) == numberCharactersField9):
+            fieldTrue +=1
+        else:
+            pass # messagePhraseCheck[6] = '0000'
+        
+        for numberField in range(7, 11):
+            if len(messagePhraseCheck[numberField]) == numberCharactersField2:
                 fieldTrue +=1
             else:
-                messagePhraseCheck[11] = '00000'
-        else:
-            messagePhraseCheck.append('00000')
-    
-    if fieldMax.get(messagePhraseCheck[0])-1 > 11:
-        if len(messagePhraseCheck[12]) == numberCharactersField1:
-            fieldTrue +=1
-        else:
-            messagePhraseCheck[12] = '0'
-    if fieldMax.get(messagePhraseCheck[0])-1 > 12:
-        if len(messagePhraseCheck[12]) == numberCharactersField1:
-            fieldTrue +=1
-        else:
-            messagePhraseCheck[12] = '0'
+                pass # messagePhraseCheck[numberField] = '00'
 
+        if fieldMax.get(messagePhraseCheck[0])-1 > 10:
+            if len(messagePhraseCheck) == fieldMax.get(messagePhraseCheck[0]):
+                if len(messagePhraseCheck[11]) == numberCharactersField5:
+                    fieldTrue +=1
+                else:
+                    pass # messagePhraseCheck[11] = '00000'
+            else:
+                messagePhraseCheck.append('00000')
+        
+        if fieldMax.get(messagePhraseCheck[0])-1 > 11:
+            if len(messagePhraseCheck[12]) == numberCharactersField1:
+                fieldTrue +=1
+            else:
+                pass # messagePhraseCheck[12] = '0'
+        if fieldMax.get(messagePhraseCheck[0])-1 > 12:
+            if len(messagePhraseCheck[12]) == numberCharactersField1:
+                fieldTrue +=1
+            else:
+                messagePhraseCheck[12] = '0'
+
+
+    
     if fieldTrue == fieldMax.get(messagePhraseCheck[0]):
         resulFormat = 'МАКЕТ ВЕРЕН'
     else:
-        resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'    
+        resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'
+        # skipCheck += 1
 
     return resulFormat, messagePhraseCheck
 
@@ -143,38 +150,39 @@ def checkFormatMessageIPhrase(messageIPhraseCheck):
             if IPhraseNumberField < IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) == len(messageIPhraseCheck[IPhraseNumberField]):
                 IPhraseFieldTrue +=1
             elif IPhraseNumberField < IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) != len(messageIPhraseCheck[IPhraseNumberField]):
-                messageIPhraseCheck[IPhraseNumberField] = '0' * IPhraseColumnSet.get(IPhraseNumberField)
+                pass # messageIPhraseCheck[IPhraseNumberField] = '0' * IPhraseColumnSet.get(IPhraseNumberField)
             if IPhraseNumberField == IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) < len(messageIPhraseCheck[IPhraseNumberField]):
                 IPhraseFieldTrue +=1
             elif IPhraseNumberField == IPhraseFieldMax-1 and IPhraseColumnSet.get(IPhraseNumberField) > len(messageIPhraseCheck[IPhraseNumberField]):
-                messageIPhraseCheck[IPhraseNumberField] = '0' * IPhraseColumnSet.get(IPhraseNumberField)
+                pass # messageIPhraseCheck[IPhraseNumberField] = '0' * IPhraseColumnSet.get(IPhraseNumberField)
     else:
         IPhraseFieldTrue = len(messageIPhraseCheck)
     if IPhraseFieldTrue == IPhraseFieldMax:
-        resulFormat = 'МАКЕТ ВЕРЕН'
+        resulFormatIPhraseCheck = 'МАКЕТ ВЕРЕН'
     else:
-        resulFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ' 
+        resulFormatIPhraseCheck = 'ОШИБКА МАКЕТА СООБЩЕНИЯ' 
         messageIPhraseCheck = messageIPhraseEmpty
     
-    return resulFormat, messageIPhraseCheck
+    return resulFormatIPhraseCheck, messageIPhraseCheck
 
 def addingMessage(messageSPhraseAdd):
     """Добавление недостающих элементов до полного набора полей общего формата сообщений.
-    За полный набор полей общего формата сообщений принимаю набор полей сообщения 201
+    За полный набор полей общего формата сообщений принят набор полей сообщения 201
     """
-    if messageSPhraseAdd[0] == '200':
+    if len(messageSPhraseAdd) == 12:
         messageSPhraseAdd.append('0')
-    elif messageSPhraseAdd[0] == '202' or messageSPhraseAdd[0] == '205':
-        if len(messageSPhraseAdd) == 11:
-            messageSPhraseAdd.append('00/00')
-            messageSPhraseAdd.append('0')
-        elif len(messageSPhraseAdd) == 12:
-            messageSPhraseAdd.append('0')
-        else:
-             messageSPhraseAdd[11] = '00/00'
-             messageSPhraseAdd[12] = '0' 
-    elif messageSPhraseAdd[0] == '203':
+    elif len(messageSPhraseAdd) == 11:
+        messageSPhraseAdd.append('00/00')
         messageSPhraseAdd.append('0')
+    elif len(messageSPhraseAdd) == 10:
+        messageSPhraseAdd.append('00')
+        messageSPhraseAdd.append('00/00')
+        messageSPhraseAdd.append('0') 
+    elif len(messageSPhraseAdd) == 9:
+        messageSPhraseAdd.append('00')
+        messageSPhraseAdd.append('00')
+        messageSPhraseAdd.append('00/00')
+        messageSPhraseAdd.append('0') 
     pass
     return messageSPhraseAdd        
 
@@ -217,18 +225,30 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
             differenceHours = 24 + hoursStop - hoursStart
         return differenceHours, differenceMinutes
     
+    # проверка на присутствие станции передачи сообщения в списке станций
+    if listMessages[-1][1][:4] not in set(stations[0]):
+        numberErrors += 1
+        fileTXTResult.write('Станция '+ listMessages[-1][1][:4] + ' отсутствует в списке станций. Ошибка ' + str(numberErrors) + '. Проверка прервана \n')
+        stopCheck += 1
+        return numberStation
+    
+    # Проверка перехода поезда на следующую станцию
     if ((listMessages[-1][0] == '202' or (listMessages[-1][0] == '205' and numberStation == 0 )  
         or (listMessages[-1][0] == '201' and numberStation != 0)) and listMessages[-1][1] not in set(stationsPassedThrough)): 
             stationsPassedThrough.append(listMessages[-1][1])
             numberStation += 1
-    
+    elif listMessages[-1][0] == '200' and numberStation == 0:
+        fileTXTResult.write('\t\t Сообщение 200 не может быть первым сообщением о движении поезда\n')
+        skipCheck +=1
 
     elif ((listMessages[-1][0] == '202' or (listMessages[-1][0] == '205' and numberStation == 0 )  
             or (listMessages[-1][0] == '201' and numberStation > 1)) and listMessages[-1][1] in set(stationsPassedThrough)):
         skipCheck +=1
-        fileTXTResult.write('\t\t Через станцию '+ listMessages[-1][1] + ' поезд уже проезжал. Проверка следующих сообщений пропущена.\n')
+        fileTXTResult.write('\t\t Через станцию '+ listMessages[-1][1][:4] + ' поезд уже проезжал. Проверка следующих сообщений пропущена.\n')
     
+
     if resultCheckFormat == 'ОШИБКА МАКЕТА СООБЩЕНИЯ':
+        fileTXTResult.write('\t\t Логическая проверка сообщения пропущена.\n')
         return numberStation
     
     if skipCheck == 0:    
@@ -249,7 +269,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
         else:
             fileTXTResult.write('ОШИБКА МАКЕТА. Код ЕСР станции не проверяется')
         
-        # для поездов между двумя станциями проверка соответствия станций формирования и станции отправления с первой станции
+        # ! для поездов между двумя станциями проверка соответствия станции формирования и станции отправления с первой станции
         if len(stations[0]) == 2 and listMessages[-1][1][:4] == listMessages[-1][3]:
             if flagLoging == 1:
                 fileTXTResult.write('\t\tСтанция '+ listMessages[-1][1][:4] + ' передачи сообщения соотвествует станции формирования поезда\n')
@@ -258,8 +278,23 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
             '\n\t\t Проверка следующих сообщений не выполняется. \n' )
             skipCheck += 1
             return(numberStation)
-
-
+        
+        
+        # ! для поездов между двумя станциями проверка соответствия индекса поезда станциям начала и окончания движения поезда
+        if len(stations[0]) == 2 and stations[0][0] == listMessages[-1][3] and stations[0][1] == listMessages[-1][5]:
+            if flagLoging == 1:
+                fileTXTResult.write('\t\tСтанция формирования '+ listMessages[-1][3] + ' соответствует станции ' + stations[0][0]+' начала движения поезда.\n')
+                fileTXTResult.write('\t\tСтанция назначения '+ listMessages[-1][5] + ' соответствует станции ' + stations[0][1] + ' окончания движения поезда.\n')
+        elif len(stations[0]) == 2 and stations[0][0] != listMessages[-1][3]:
+            fileTXTResult.write('\t\tСтанция формирования '+ listMessages[-1][3] + ' НЕ СООТВЕТСТВУЕТ станции ' + stations[0][0]+' начала движения поезда.\n')
+            skipCheck += 1
+            return(numberStation)
+        elif len(stations[0]) == 2 and stations[0][0] != listMessages[-1][3]:
+            fileTXTResult.write('\t\tСтанция назначения '+ listMessages[-1][5] + ' НЕ СООТВЕТСТВУЕТ станции ' + stations[0][1] + ' окончания движения поезда.\n')
+            skipCheck += 1
+            return(numberStation)
+        
+        
         if (len(stations[0]) == 2 and listMessages[-1][1][-4:] ==  stations[0][numberStation-1] and len(listMessages[-1][1]) == 9  
                 and (stations[1][stations[0].index(listMessages[-1][3])][:1] == '3' or stations[1][stations[0].index(listMessages[-1][3])][:1] == '1') 
                 and stations[1][stations[0].index(listMessages[-1][5])][:1] == '3' 
@@ -273,13 +308,6 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
                 and (listMessages[-1][0] == '201' or listMessages[-1][0] == '203')):
             fileTXTResult.write('Станция '+ listMessages[-1][3] + '  должна передать сообщение за станцию ' + stations[0][numberStation-1] +'\n')
         
-        # проверка на присутствие станции в списке станций
-        if listMessages[-1][1][:4] not in set(stations[0]):
-            numberErrors += 1
-            fileTXTResult.write('Станция '+ listMessages[-1][1][:4] + ' отсутствует в списке станций. Ошибка ' + str(numberErrors) + '. Проверка прервана \n')
-            stopCheck += 1
-
-            return numberStation
         
         
         # проверка соответствия роли станции передаваемым сообщениям
@@ -301,7 +329,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
                                     ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд сквозной ' + listMessages[-1][2] +'\n')
             else:
                 if flagLoging == 1:
-                    fileTXTResult.write('\t\t Кол- во техн станций на маршруте движения ' + str(quantityTechnStation) +
+                    fileTXTResult.write('\t\t Кол-во техн станций на маршруте движения ' + str(quantityTechnStation) +
                                     ', кол-во междор стыков ' + str(quantityBoardStation) +' поезд не сквозной ' + listMessages[-1][2] + '\n')
         else:
             if numberStation > 0:    
@@ -316,30 +344,45 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
             else: 
                 pass # fileTXTResult.write('\t\t Это сообщение не может быть первым\n')
 
-        # проверка индекса поезда
+        # проверка номера поезда при движении между двумя станциями
+        if len(stations[0]) == 2 and (listMessages[-1][2][:2] == '36' or listMessages[-1][2][:2] == '35'):
+            if flagLoging == 1:
+                    fileTXTResult.write('\t\t Номер поезда ' + listMessages[-1][2] + ' соответствует маршруту его движения\n')
+        elif len(stations[0]) == 2 and (listMessages[-1][2][:2] != '36' and listMessages[-1][2][:2] != '35'):
+            fileTXTResult.write('\t\t Номер поезда ' + listMessages[-1][2] + ' НЕ СООТВЕТСТВУЕТ маршруту его движения\n')
+
         if numberStation == 1 and len(stations[0]) == 2 and listMessages[-1][1][:4] != listMessages[-1][3]:
             fileTXTResult.write('\t\t Индекс поезда  НЕ СООТВЕСТВУЕТ СТАНЦИИ ФОРМИРОВАНИЯ\n')
 
         if numberStation == 2 and len(stations[0]) == 2 and listMessages[-1][1][-4:] != listMessages[-1][5]:
             fileTXTResult.write('\t\t Индекс поезда  НЕ СООТВЕСТВУЕТ СТАНЦИИ НАЗНАЧЕНИЯ\n')
 
+        # проверка индекса поезда
 
         if numberStation == 1:
-            if listMessages[-1][2][:1] == '2' and ((listMessages[-1][3][:2] not in setRegions and listMessages[-1][5][:2] not in setRegions)
-                or (listMessages[-1][3][:2] not in setRegions and listMessages[-1][5][:2] in setRegions) 
-                or (listMessages[-1][3][:2] in setRegions and listMessages[-1][5][:2] not in setRegions) 
-                or (listMessages[-1][3][:2] in setRegions and listMessages[-1][5][:2] in setRegions 
+            if listMessages[-1][2][:1] == '2' and ((listMessages[-1][3][:2] not in setRegions and listMessages[-1][5][:2] not in setRegions) # ст-ии форм-ия и назн-ия не входят в дорогу 
+                or (listMessages[-1][3][:2] not in setRegions and listMessages[-1][5][:2] in setRegions) # ст-ия форм-ия не входит в дорогу, ст-ия назн-ия входит
+                or (listMessages[-1][3][:2] in setRegions and listMessages[-1][5][:2] not in setRegions) # ст-ии форм-ия входит в дорогу и ст-ия назн-ия не входят в дорогу 
+                or (listMessages[-1][3][:2] in setRegions and listMessages[-1][5][:2] in setRegions  # ст-ии форм-ия и назн-ия входят в дорогу 
                     and listMessages[-1][3][:2] != listMessages[-1][5][:2])):
-                pass
                 if flagLoging == 1:
                     fileTXTResult.write('\t\t Индекс поезда соответствует номеру поезда\n')
+            
             elif listMessages[-1][2][:1] == '3' and (listMessages[-1][3][:2] in setRegions and listMessages[-1][3][:2] == listMessages[-1][5][:2]):
-                pass
                 if flagLoging == 1:
-                    fileTXTResult.write('\t\t Индекс поезда соответствует номеру поезда\n')
-                pass
+                    fileTXTResult.write('\t\t Номер поезда соответствует индексу поезда\n')
+                
+            
             else:
-                fileTXTResult.write('\t\t Индекс поезда НЕ СООТВЕТСТВУЕТ номеру поезда\n')    
+                fileTXTResult.write('\t\t Номер поезда НЕ СООТВЕТСТВУЕТ индексу поезда\n')    
+            
+            if (listMessages[-1][3] in stationsAllSet and
+                stationsAllList[1][stationsAllList[0].index(listMessages[-1][3])][:1] not in listRole200):
+                fileTXTResult.write('\t\tСтанция ' + listMessages[-1][3] + ' НЕ МОЖЕТ  быть станцией формирования поезда\n')
+            
+            if (listMessages[-1][5] in stationsAllSet and
+                stationsAllList[1][stationsAllList[0].index(listMessages[-1][5])][:1] not in listRole200) :
+                fileTXTResult.write('\t\tСтанция ' + listMessages[-1][5] + ' НЕ МОЖЕТ быть станцией назначения поезда\n')
                 
         if numberStation > 1:
             if compareField(3)==1 and compareField(4)==1 and compareField(5)==1:
@@ -538,7 +581,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
                 if flagLoging == 1:
                     fileTXTResult.write('\t ' + str(hoursWork)+ ' ' +str(minutesWork) + ' Время работы лок. бригады не превышает 12 часов \n')
             else:
-                fileTXTResult.write('\t ' + str(hoursWork)+ ' ' +str(minutesWork) + ' Время работы лок. бригады ПРЕВЫШАЕТ 12 ЧАСОВ \n')
+                fileTXTResult.write('\t ' + str(hoursWork)+ ' час. ' +str(minutesWork) + ' мин. Время работы лок. бригады ПРЕВЫШАЕТ 12 ЧАСОВ \n')
 
             # проверка депо приписки
             if listMessages[-1][18][-2:] != '00':
@@ -578,7 +621,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
                 elif listMessages[-1][0] == '205' and listMessages[-2][0] == '201' and listMessages[-1][18][:2] != min(list(setRegions)):
                     fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады НЕ СООТВЕТСТВЕТ заданной дороге \n')
                 else:
-                    fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады НЕ СООТВЕТСВУЕТ предыдущему сообщению \n\n')
+                    fileTXTResult.write('\t ' + listMessages[-1][18] + ' Депо приписки лок. бригады НЕ СООТВЕТСВУЕТ ' + listMessages[-2][18] + ' предыдущему сообщению \n\n')
                             
 
             # проверка табельного номера лок-ой бригады и фамилии машиниста
@@ -600,10 +643,9 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
             
             elif ((listMessages[-1][0] != '205' or listMessages[-1][0] != '203' ) and numberStation > 1
                 and (compareField(19) == 0 or compareField(20) == 0)):
-                fileTXTResult.write('\t ' + listMessages[-1][19] + ' ' + listMessages[-1][20] + ' Лок. бригада НЕ СООТВЕТСТВУЕТ предыдущему сообщению\n')
+                fileTXTResult.write('\t ' + listMessages[-1][19] + ' ' + listMessages[-1][20] + ' Лок. бригада НЕ СООТВЕТСТВУЕТ ' + listMessages[-2][19] + ' ' + listMessages[-2][20] + ' предыдущему сообщению\n')
 
-        
-
+    skipCheck = 0
     return numberStation
 
 
@@ -678,7 +720,6 @@ listMessages = list()
 roleStations = list()
 listRole202 = ['3', '4', '5', '6'] # начало кодов ролей станций отправляющие с.202
 listRole200 = ['3', '1', '2'] # начало кодов ролей станций отправляющие с.200
-pass
 stopCheck = 0 # Для остановки проверки файла при критических ошибках
 stationsPassedThrough = list() # для контроля за проследованием станций
 skipCheck = 0
@@ -690,8 +731,8 @@ for nameFileTXT in fileList:
         continue
     else:
         stopCheck = 0
-        fileTXT = open(pathForCheck+nameFileTXT, 'r', encoding='cp1251') # открытие проверяемого файла 
-        fileTXTResult = open(pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w', encoding='cp1251') # результат проверки
+        fileTXT = open(pathForCheck+nameFileTXT, 'r') # открытие проверяемого файла 
+        fileTXTResult = open(pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w') # результат проверки, encoding='cp1251'
         # обработка номеров вагонов
         for i in fileTXT:
             lineTXT = i.strip()
@@ -708,6 +749,7 @@ for nameFileTXT in fileList:
                     fileTXTResult.write(lineTXT + ' ' + res + '\n')
         fileTXTResult.write('#\n')
         # обработка списка кодов станций
+        setRegions.clear()
         for i in fileTXT:
             lineTXT = i.strip()
             if lineTXT == '':
@@ -740,6 +782,10 @@ for nameFileTXT in fileList:
                     fileTXTResult.write(lineTXT + ' ' + resStation + '. Ошибка ' + str(numberErrors) + '\n')
                 else:
                     fileTXTResult.write(lineTXT + ' ' + resStation + '\n')
+        stationsAllList = list()
+        stationsAllList.append(list(dictStation.keys()))
+        stationsAllList.append(list(dictStation.values()))
+        stationsAllSet = set(list(dictStation.keys()))
         fileTXTResult.write('#\n')
         # listRegions = list(setRegions)
         
@@ -779,42 +825,47 @@ for nameFileTXT in fileList:
                 quantityTechnStation = checkQuantityRoleStation(roleStations, '1') + checkQuantityRoleStation(roleStations, '2')
                 quantityBoardStation = checkQuantityRoleStation(roleStations, '5')
 
-            elif skipCheck == 0 and (lineTXT[:2] == '(:'and lineTXT[-2:] != ':)'): # служебная фраза с информационной в след. строке
+            elif (lineTXT[:2] == '(:'and lineTXT[-2:] != ':)'): # служебная фраза с информационной в след. строке
                 messageSPhrase.clear()
                 messageIPhrase.clear()
                 message.clear() 
                 messageTemp = lineTXT[2:].split()
-                resultCheckFormat, messageSPhrase = checkFormatMessageSPhrase(messageTemp)
-                fileTXTResult.write('\n' + lineTXT + '\t\t\t' + resultCheckFormat + '\n')
+                resultCheckFormatSPhrase, messageSPhrase = checkFormatMessageSPhrase(messageTemp)
+                fileTXTResult.write('\n' + lineTXT + '\t\t\t' + resultCheckFormatSPhrase + '\n')
                 message = addingMessage(messageSPhrase.copy())
             
-            elif skipCheck == 0 and lineTXT[:2] == '(:'and lineTXT[-2:] == ':)': # сообщение из служебной фразы
+            elif lineTXT[:2] == '(:'and lineTXT[-2:] == ':)': # сообщение из служебной фразы
                 messageTemp = lineTXT[2:-2].split()
-                resultCheckFormat, messageSPhrase = checkFormatMessageSPhrase(messageTemp)    
+                resultCheckFormatSPhrase, messageSPhrase = checkFormatMessageSPhrase(messageTemp)    
                 
                 
-                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
+                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormatSPhrase + '\n\n')
                 message = addingMessage(messageSPhrase.copy()) + messageIPhraseEmpty.copy()
                 listMessages.append(message.copy())
                 
-                numberStation = checkLogicalMessage(numberStation, resultCheckFormat)
+                numberStation = checkLogicalMessage(numberStation, resultCheckFormatSPhrase)
                 
                 if stopCheck > 0:
                     break
             
-            elif skipCheck == 0 and lineTXT[:2] != '(:'and lineTXT[-2:] == ':)': # информационная фраза со служеюной в предыд. строке
+            elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)': # информационная фраза со служеюной в предыд. строке
                 messageTemp = lineTXT[:-2].split()
-                resultCheckFormat, messageTemp = checkFormatMessageIPhrase(messageTemp)    
-                if resultCheckFormat == 'МАКЕТ ВЕРЕН':
+                resultCheckFormatIPhrase, messageTemp = checkFormatMessageIPhrase(messageTemp)    
+                if resultCheckFormatIPhrase == 'МАКЕТ ВЕРЕН':
                     messageIPhrase = messageTemp.copy()
                 else:
                     messageIPhrase = messageTemp.copy()
-                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormat + '\n\n')
+                fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormatIPhrase + '\n\n')
                 message = message + messageIPhrase
                 listMessages.append(message.copy())
 
-                pass
+                if resultCheckFormatSPhrase == 'МАКЕТ ВЕРЕН' and resultCheckFormatIPhrase == 'МАКЕТ ВЕРЕН':
+                    resultCheckFormat = 'МАКЕТ ВЕРЕН'
+                else:
+                    resultCheckFormat = 'ОШИБКА МАКЕТА СООБЩЕНИЯ'
+                
                 numberStation = checkLogicalMessage(numberStation, resultCheckFormat)
+
             elif skipCheck == 1:
                 fileTXTResult.write(lineTXT + '\t\tПроверка сообщения пропущена\n')
                 
