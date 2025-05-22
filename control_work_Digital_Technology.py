@@ -2,6 +2,7 @@
 Проверка контрольной работы по дисциплине "Цифровые технологии в профессональной деятельности"
 """
 import os
+import chardet
 flagLoging = 0 # Флаг для логирования положительного результата проверки = 1
 #car = '50701077'
 def checkNumber(car):
@@ -702,7 +703,7 @@ def compareField(numberField:int):
     if numberStation > 1 and listMessages[-2][numberField] != listMessages[-1][numberField]:
         return 0
     return 1
-    
+ # -----------------------------------------------------------------------------------------------------   
 # os.chdir('Для проверки//')
 pathForCheck = 'Для проверки//' # папка хранения проверяемых файлов
 pathPastCheck = 'После проверки//' # папка хранения результатов проверки
@@ -724,6 +725,15 @@ stopCheck = 0 # Для остановки проверки файла при к�
 stationsPassedThrough = list() # для контроля за проследованием станций
 skipCheck = 0
 
+def detect_encoding(file_path):
+    with fileTXT as file: #open(file_path, 'rb') as file:
+        detector = chardet.universaldetector.UniversalDetector()
+        for line in file:
+            detector.feed(line)
+            if detector.done:
+                break
+        detector.close()
+    return detector.result['encoding']
 
 fileList = os.listdir(pathForCheck) 
 for nameFileTXT in fileList:
@@ -731,11 +741,14 @@ for nameFileTXT in fileList:
         continue
     else:
         stopCheck = 0
-        fileTXT = open(pathForCheck+nameFileTXT, 'r') # открытие проверяемого файла 
-        fileTXTResult = open(pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w') # результат проверки, encoding='cp1251'
+        fileTXT = open(pathForCheck+nameFileTXT, 'rb') # открытие проверяемого файла 
+        encodingFileTXT = detect_encoding(fileTXT)
+        fileTXT = open(pathForCheck+nameFileTXT, 'r', encoding = str(encodingFileTXT))
+        fileTXTResult = open(pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w', encoding = str(encodingFileTXT)) # результат проверки, encoding='cp1251'
         # обработка номеров вагонов
         for i in fileTXT:
-            lineTXT = i.strip()
+            lineTXT = i.strip()[-8:]
+            
             if lineTXT == '':
                 continue
             if lineTXT == '#':
@@ -798,6 +811,7 @@ for nameFileTXT in fileList:
         for i in fileTXT:
             if stopCheck > 0:
                 break
+            
             lineTXT = i.strip()
             if lineTXT == '':
                 continue
