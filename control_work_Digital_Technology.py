@@ -744,7 +744,7 @@ for nameFileTXT in fileList:
         fileTXT = open(pathForCheck+nameFileTXT, 'rb') # открытие проверяемого файла 
         encodingFileTXT = detect_encoding(fileTXT)
         fileTXT = open(pathForCheck+nameFileTXT, 'r', encoding = str(encodingFileTXT))
-        fileTXTResult = open(pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w', encoding = str(encodingFileTXT)) # результат проверки, encoding='cp1251'
+        fileTXTResult = open(pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt', 'w', encoding = 'utf-8') # результат проверки, encoding='cp1251'
         # обработка номеров вагонов
         for i in fileTXT:
             lineTXT = i.strip()[-8:]
