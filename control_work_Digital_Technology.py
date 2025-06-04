@@ -196,6 +196,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
     global stopCheck
     global stationsPassedThrough # Список станций, по которым продвигаются поезда
     global skipCheck
+    global stopCheck
 
     def differenceTime(hoursStart:int, minutesStart:int, hoursStop:int, minutesStop:int):
         """
@@ -811,6 +812,7 @@ for nameFileTXT in fileList:
             if lineTXT == '':
                 continue
             if lineTXT == '#':
+                fileTXTResult.write('#\n')
                 break
             else:
                 res = checkNumber(lineTXT)
@@ -819,7 +821,6 @@ for nameFileTXT in fileList:
                     fileTXTResult.write(lineTXT + ' '+ res+'. Ошибка '+ str(numberErrors)+'\n')
                 else:
                     fileTXTResult.write(lineTXT + ' ' + res + '\n')
-        fileTXTResult.write('#\n')
         # обработка списка кодов станций
         setRegions.clear()
         for i in fileTXT:
@@ -829,6 +830,7 @@ for nameFileTXT in fileList:
             if lineTXT == '':
                 continue
             elif lineTXT == '#':
+                fileTXTResult.write('#\n')
                 break
             elif len(lineTXT) != 9:
                 numberErrors += 1
@@ -874,8 +876,8 @@ for nameFileTXT in fileList:
             elif lineTXT[0] == '!':
                 countTrain += 1
                 fileTXTResult.write('\nПОЕЗД '+ str(countTrain) + '\n')            
-                if stopCheck != 0:
-                    break
+                """if stopCheck != 0:
+                    break"""
                 stopCheck = 0
                 skipCheck = 0
                 stations.clear()
@@ -889,9 +891,9 @@ for nameFileTXT in fileList:
                         numberErrors += 1
                         fileTXTResult.write('\n'+ lineTXT + '\t\t\tСПИСОК СТАНЦИЙ НЕ СФОРМИРОВАН\n')
                         fileTXTResult.write(station + ' СТАНЦИЯ ОТСУТСТВУЕТ В СПИСКЕ СТАНЦИЙ ДОРОГИ. Проверка сообщений этого поезда прервана. Ошибка '+ str(numberErrors)+'\n')
-                        skipCheck +=1
+                        stopCheck +=1
                         break
-                if len(stations[0]) == len(roleStations):
+                if len(stations[0]) == len(roleStations) and stopCheck == 0:
                     stations.append(roleStations)
                     fileTXTResult.write('\n'+lineTXT + '\t\t\tСПИСОК СТАНЦИЙ СФОРМИРОВАН\n')
                     stationsPassedThrough = []
@@ -902,7 +904,10 @@ for nameFileTXT in fileList:
                     quantityBoardStation = checkQuantityRoleStation(roleStations, '5')
                     continue
 
-            if stopCheck > 0: # пропускаем обработку до конца файла
+                if lineTXT[0] == '!':
+                    continue
+
+            if stopCheck > 0 and lineTXT[0] != '!': # пропускаем обработку следующего описания поезда
                 continue
 
             elif (lineTXT[:2] == '(:'and lineTXT[-2:] != ':)'): # служебная фраза с информационной в след. строке
@@ -932,7 +937,7 @@ for nameFileTXT in fileList:
                 
                 numberStation = checkLogicalMessage(numberStation, resultCheckFormatSPhrase)
                 
-                if stopCheck > 0:
+                if stopCheck > 0 and lineTXT[0] == '!':
                     break
             
             elif lineTXT[:2] != '(:'and lineTXT[-2:] == ':)': # информационная фраза со служеюной в предыд. строке
@@ -972,7 +977,7 @@ for nameFileTXT in fileList:
         fileTXT.close()
         fileTXTResult.close()
         if numberErrors != 0:
-            nameFileTXTResultErr = nameFileTXTResult[:-4]+'_Err_'+str(numberErrors)+'.txt'
+            nameFileTXTResultErr = nameFileTXTResult[:-4]+'_Err_.txt'
             if os.path.exists(nameFileTXTResultErr):
                 os.remove(nameFileTXTResultErr)
             os.rename(nameFileTXTResult,nameFileTXTResultErr)

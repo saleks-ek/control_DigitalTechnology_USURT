@@ -1,3 +1,5 @@
+""" Извлечение текста из файла ПДФ формата и сохранение его к формат TXT"""
+
 from pypdf import PdfReader
 import os
 
