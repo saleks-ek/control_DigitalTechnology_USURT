@@ -562,6 +562,23 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
                 if flagLoging == 1:
                     fileTXTResult.write('\t\t ' + str(hoursParkingBrigade*60+minutesParkingBrigade) + ' мин. Время работы лок. бригады до готовности\n')
         
+        # проверка номера парка и пути в операции приема и операциях отправления и расформирования
+        if (listMessages[-1][0] == '200' and len(listMessages) > 2 and (listMessages[-1][11] ==  listMessages[-3][11] and listMessages[-3][0] == '201')):
+            if flagLoging == 1:
+                    fileTXTResult.write('\t\tПарк\Путь ' + listMessages[-1][11] + ' выполнения операции ОТПРАВЛЕНИЯ соответствует парку\пути в операции приема ' +
+                                        listMessages[-3][11] +'\n')
+        elif ((listMessages[-1][0] == '203') and len(listMessages) > 2 and (listMessages[-1][11] ==  listMessages[-2][11] and listMessages[-2][0] == '201')):
+            if flagLoging == 1:
+                    fileTXTResult.write('\t\tПарк\Путь ' + listMessages[-1][11] + ' выполнения операции РАСФОРМИРОВАНИЯ соответствует парку\пути в операции приема ' +
+                                        listMessages[-3][11] +'\n')            
+        elif ((listMessages[-1][0] == '200') and len(listMessages) > 2 and (listMessages[-1][11] !=  listMessages[-3][11] and listMessages[-3][0] == '201')):
+            numberErrors += 1
+            fileTXTResult.write('\t\tПарк\Путь ' + listMessages[-1][11] + ' выполнения операции ОТПРАВЛЕНИЯ НЕ СООТВЕТСТВУЕТ парку\пути в операции приема ' +
+                                        listMessages[-3][11] + '. ОШИБКА ' + str(numberErrors) +'\n')
+        elif ((listMessages[-1][0] == '203') and len(listMessages) > 2 and (listMessages[-1][11] !=  listMessages[-2][11] and listMessages[-2][0] == '201')):
+            numberErrors += 1
+            fileTXTResult.write('\t\tПарк\Путь ' + listMessages[-1][11] + ' выполнения операции РАСФОРМИРОВАНИЯ НЕ СООТВЕТСТВУЕТ парку\пути в операции приема ' +
+                                        listMessages[-2][11] + '. ОШИБКА ' + str(numberErrors) +'\n')
         pass
 
 
@@ -799,7 +816,7 @@ for nameFileTXT in fileList:
         fileTXT = open(pathForCheck+nameFileTXT, 'rb') # открытие проверяемого файла 
         encodingFileTXT = detect_encoding(fileTXT)
         fileTXT = open(pathForCheck+nameFileTXT, 'r', encoding = str(encodingFileTXT))
-        nameFileTXTResult = pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result'+'.txt'
+        nameFileTXTResult = pathPastCheck+nameFileTXT[0:len(nameFileTXT)-4]+'_result_OK'+'.txt'
         fileTXTResult = open(nameFileTXTResult, 'w', encoding = 'utf-8') # результат проверки, encoding='cp1251'
         # обработка номеров вагонов
         for i in fileTXT:
@@ -977,7 +994,7 @@ for nameFileTXT in fileList:
         fileTXT.close()
         fileTXTResult.close()
         if numberErrors != 0:
-            nameFileTXTResultErr = nameFileTXTResult[:-4]+'_Err_.txt'
+            nameFileTXTResultErr = nameFileTXTResult[:-7]+'_Err_.txt'
             if os.path.exists(nameFileTXTResultErr):
                 os.remove(nameFileTXTResultErr)
             os.rename(nameFileTXTResult,nameFileTXTResultErr)
