@@ -196,6 +196,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
     global stopCheck
     global stationsPassedThrough # Список станций, по которым продвигаются поезда
     global skipCheck
+    global stopCheck
 
     def differenceTime(hoursStart:int, minutesStart:int, hoursStop:int, minutesStop:int):
         """
@@ -560,8 +561,8 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
                 pass
                 if flagLoging == 1:
                     fileTXTResult.write('\t\t ' + str(hoursParkingBrigade*60+minutesParkingBrigade) + ' мин. Время работы лок. бригады до готовности\n')
-          
-          # проверка номера парка и пути в операции приема и операциях отправления и расформирования
+        
+        # проверка номера парка и пути в операции приема и операциях отправления и расформирования
         if (listMessages[-1][0] == '200' and len(listMessages) > 2 and (listMessages[-1][11] ==  listMessages[-3][11] and listMessages[-3][0] == '201')):
             if flagLoging == 1:
                     fileTXTResult.write('\t\tПарк\Путь ' + listMessages[-1][11] + ' выполнения операции ОТПРАВЛЕНИЯ соответствует парку\пути в операции приема ' +
@@ -578,7 +579,6 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
             numberErrors += 1
             fileTXTResult.write('\t\tПарк\Путь ' + listMessages[-1][11] + ' выполнения операции РАСФОРМИРОВАНИЯ НЕ СООТВЕТСТВУЕТ парку\пути в операции приема ' +
                                         listMessages[-2][11] + '. ОШИБКА ' + str(numberErrors) +'\n')
-
         pass
 
 
@@ -593,21 +593,13 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
             elif numberStation > 1 and listMessages[-1][0] == '205' and listMessages[-2][12] == '1' and compareField(14) == 1:
                 numberErrors += 1
                 fileTXTResult.write('\t Смена лок-ва НЕ ВЫПОЛНЕНА. ОШИБКА ' + str(numberErrors) + '\n')
-            elif numberStation != 1 and listMessages[-1][0] == '205' and listMessages[-2][12] == '0' and compareField(13) == 1 and compareField(14) == 1:
-                pass
-                if flagLoging == 1:
-                    fileTXTResult.write('\t Смена лок-ва не нужна и не выполнялась\n')    
-                pass
-            elif numberStation != 1 and listMessages[-1][0] == '205' and listMessages[-2][12] == '0' and (compareField(13) == 0 
-                                                                                                          or compareField(14) == 0):
-                numberErrors += 1
-                fileTXTResult.write('\t Смена лок-ва НЕ НУЖНА, НО ВЫПОЛНЕНА. ОШИБКА ' + str(numberErrors) + '\n')
+            elif numberStation != 1 and listMessages[-1][0] == '205' and listMessages[-2][12] == '0': #  and compareField(14) == 1:
                 pass
                 if flagLoging == 1:
                     fileTXTResult.write('\t Смена лок-ва не нужна\n')    
             pass
             # проверка номера лок-ва
-            if numberStation >= 1 and (listMessages[-1][0] == '202' or listMessages[-1][0] == '205' or listMessages[-1][0] == '200'):
+            if numberStation == 1 and (listMessages[-1][0] == '202' or listMessages[-1][0] == '205' or listMessages[-1][0] == '200'):
                 if listMessages[-1][14][:-1] == '0000':
                     numberErrors += 1
                     fileTXTResult.write('\t Номер лок-ва '+ listMessages[-1][14] + ' НЕ ДОПУСТИМ. ОШИБКА ' + str(numberErrors) + '\n')
@@ -779,7 +771,7 @@ def compareField(numberField:int):
     """
     Сравнение поля с номером numberField последней и предпоследней записей в списке сообщений
     """
-        if listMessages[-2][numberField] != listMessages[-1][numberField]:
+    if listMessages[-2][numberField] != listMessages[-1][numberField]:
         return 0
     return 1
  # -----------------------------------------------------------------------------------------------------   
@@ -846,7 +838,6 @@ for nameFileTXT in fileList:
                     fileTXTResult.write(lineTXT + ' '+ res+'. Ошибка '+ str(numberErrors)+'\n')
                 else:
                     fileTXTResult.write(lineTXT + ' ' + res + '\n')
-        # fileTXTResult.write('#\n')
         # обработка списка кодов станций
         setRegions.clear()
         for i in fileTXT:
@@ -944,11 +935,12 @@ for nameFileTXT in fileList:
                 messageTemp = lineTXT[2:].split()
                 resultCheckFormatSPhrase, messageSPhrase = checkFormatMessageSPhrase(messageTemp)
                 fileTXTResult.write('\n' + lineTXT + '\t\t\t' + resultCheckFormatSPhrase + '\n')
+                
                 if len(messageSPhrase) < 13: # пополнение до полной фразы, если она не полная (полей меньше 13)
                     message = addingMessage(messageSPhrase.copy())
                 else:
                     message = messageSPhrase.copy()
-            
+                
             elif lineTXT[:2] == '(:'and lineTXT[-2:] == ':)': # сообщение из служебной фразы
                 messageTemp = lineTXT[2:-2].split()
                 resultCheckFormatSPhrase, messageSPhrase = checkFormatMessageSPhrase(messageTemp)    
@@ -956,7 +948,9 @@ for nameFileTXT in fileList:
                 
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormatSPhrase + '\n\n')
                 message = addingMessage(messageSPhrase.copy()) + messageIPhraseEmpty.copy()
+                messageSPhrase.clear()
                 listMessages.append(message.copy())
+                message.clear()
                 
                 numberStation = checkLogicalMessage(numberStation, resultCheckFormatSPhrase)
                 
@@ -969,7 +963,6 @@ for nameFileTXT in fileList:
                     fileTXTResult.write(lineTXT + '\t\tДля информационной фразы отсутствует служебная фраза. Проверка прервана.\n')
                     skipCheck += 1
                     continue
-
                 resultCheckFormatIPhrase, messageTemp = checkFormatMessageIPhrase(messageTemp)    
                 if resultCheckFormatIPhrase == 'МАКЕТ ВЕРЕН':
                     messageIPhrase = messageTemp.copy()
@@ -994,18 +987,19 @@ for nameFileTXT in fileList:
                 
             else:
                 fileTXTResult.write('\n' + lineTXT + '\t\t\tстрока не является частью сообщения\n')
+        
         if countTrain < 5:
             numberErrors += 1
             fileTXTResult.write('Описано продвижение не всех поездов. Должно быть 5, описано ' + str(countTrain) + ' ОШИБКА ' + str(numberErrors)+ '.\n')
-
         fileTXT.close()
         fileTXTResult.close()
         if numberErrors != 0:
-            nameFileTXTResultErr = nameFileTXTResult[:-4]+'_Err_'+str(numberErrors)+'.txt'
+            nameFileTXTResultErr = nameFileTXTResult[:-7]+'_Err_.txt'
             if os.path.exists(nameFileTXTResultErr):
                 os.remove(nameFileTXTResultErr)
             os.rename(nameFileTXTResult,nameFileTXTResultErr)
         print('*', end='')
         pass
+
 print('\n\nОбработка завершена\n')
 pass

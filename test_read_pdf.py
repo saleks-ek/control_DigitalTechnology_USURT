@@ -26,5 +26,5 @@ for nameFilePDF in fileList:
         fileTXTResult.close()
         countFiles += 1
        
-print('Обраобтано файлов ' + str(countFiles))
+print('Обработано файлов ' + str(countFiles))
 pass
