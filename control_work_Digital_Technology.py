@@ -779,7 +779,7 @@ def compareField(numberField:int):
     """
     Сравнение поля с номером numberField последней и предпоследней записей в списке сообщений
     """
-        if listMessages[-2][numberField] != listMessages[-1][numberField]:
+    if listMessages[-2][numberField] != listMessages[-1][numberField]:
         return 0
     return 1
  # -----------------------------------------------------------------------------------------------------   
@@ -955,9 +955,12 @@ for nameFileTXT in fileList:
                 
                 
                 fileTXTResult.write(lineTXT + '\t\t\t' + resultCheckFormatSPhrase + '\n\n')
-                message = addingMessage(messageSPhrase.copy()) + messageIPhraseEmpty.copy()
-                listMessages.append(message.copy())
                 
+                message = addingMessage(messageSPhrase.copy()) + messageIPhraseEmpty.copy()
+                messageSPhrase.clear()
+                listMessages.append(message.copy())
+                message.clear()
+
                 numberStation = checkLogicalMessage(numberStation, resultCheckFormatSPhrase)
                 
                 if stopCheck > 0 and lineTXT[0] == '!':
@@ -1001,7 +1004,7 @@ for nameFileTXT in fileList:
         fileTXT.close()
         fileTXTResult.close()
         if numberErrors != 0:
-            nameFileTXTResultErr = nameFileTXTResult[:-4]+'_Err_'+str(numberErrors)+'.txt'
+            nameFileTXTResultErr = nameFileTXTResult[:-7]+'_Err_'+str(numberErrors)+'.txt'
             if os.path.exists(nameFileTXTResultErr):
                 os.remove(nameFileTXTResultErr)
             os.rename(nameFileTXTResult,nameFileTXTResultErr)
