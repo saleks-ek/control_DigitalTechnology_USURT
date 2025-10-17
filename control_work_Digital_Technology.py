@@ -5,6 +5,7 @@ import os
 import chardet
 flagLoging = 0 # Флаг для логирования положительного результата проверки = 1
 #car = '50701077'
+
 def checkNumber(car):
     """
     Проверка номера вагона
@@ -196,7 +197,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
     global stopCheck
     global stationsPassedThrough # Список станций, по которым продвигаются поезда
     global skipCheck
-
+    
     def differenceTime(hoursStart:int, minutesStart:int, hoursStop:int, minutesStop:int):
         """
         Расчет разницы в часах и минутах между двумя моментами времени в сообщениях
@@ -368,7 +369,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
             else: 
                 pass # fileTXTResult.write('\t\t Это сообщение не может быть первым\n')
 
-        # проверка номера поезда при движении между двумя станциями
+        # проверка номера поезда при движении между двумя грузовыми станциями
         if len(stations[0]) == 2 and (listMessages[-1][2][:2] == '36' or listMessages[-1][2][:2] == '35'):
             if flagLoging == 1:
                     fileTXTResult.write('\t\t Номер поезда ' + listMessages[-1][2] + ' соответствует маршруту его движения\n')
@@ -382,7 +383,7 @@ def checkLogicalMessage(numberStation, resultCheckFormat):
 
         if numberStation == 2 and len(stations[0]) == 2 and listMessages[-1][1][-4:] != listMessages[-1][5]:
             numberErrors += 1
-            fileTXTResult.write('\t\t Индекс поезда  НЕ СООТВЕСТВУЕТ СТАНЦИИ НАЗНАЧЕНИЯ. Ошибка '+ str(numberErrors)+'\n')
+            fileTXTResult.write('\t\tСтанция передачи сообщения НЕ СООТВЕСТВУЕТ СТАНЦИИ НАЗНАЧЕНИЯ поезда. Ошибка '+ str(numberErrors)+'\n')
 
         # проверка индекса поезда
 
@@ -786,7 +787,6 @@ def compareField(numberField:int):
 # os.chdir('Для проверки//')
 pathForCheck = 'Для проверки//' # папка хранения проверяемых файлов
 pathPastCheck = 'После проверки//' # папка хранения результатов проверки
-numberErrors = 0 
 dictStation = dict()
 stations = list()
 setRegions = set()
